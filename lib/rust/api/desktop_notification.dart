@@ -6,7 +6,7 @@
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `fallback_send_notification`, `send_notification_linux`, `send`
+// These functions are ignored because they are not marked as `pub`: `escape_powershell_string`, `fallback_send_notification`, `send_notification_windows`, `send`
 // These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `NotificationBuilder`, `NotificationUrgency`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `fmt`
 
@@ -41,15 +41,10 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 ///     )
 /// }
 /// ```
-Future<void> sendNotification({
-  required String title,
-  required String message,
-  String? iconPath,
-}) => RustLib.instance.api.crateApiDesktopNotificationSendNotification(
-  title: title,
-  message: message,
-  iconPath: iconPath,
-);
+Future<void> sendNotification(
+        {required String title, required String message, String? iconPath}) =>
+    RustLib.instance.api.crateApiDesktopNotificationSendNotification(
+        title: title, message: message, iconPath: iconPath);
 
 /// Adds the current module to the lib.rs file to make it accessible.
 /// This function is purely for documentation and should not be called.
@@ -57,17 +52,15 @@ Future<void> registerModule() =>
     RustLib.instance.api.crateApiDesktopNotificationRegisterModule();
 
 /// Advanced notification with additional options - FFI-friendly version
-Future<void> sendNotificationWithOptions({
-  required String title,
-  required String message,
-  String? iconPath,
-  BigInt? timeoutSeconds,
-  int? urgencyLevel,
-}) =>
+Future<void> sendNotificationWithOptions(
+        {required String title,
+        required String message,
+        String? iconPath,
+        BigInt? timeoutSeconds,
+        int? urgencyLevel}) =>
     RustLib.instance.api.crateApiDesktopNotificationSendNotificationWithOptions(
-      title: title,
-      message: message,
-      iconPath: iconPath,
-      timeoutSeconds: timeoutSeconds,
-      urgencyLevel: urgencyLevel,
-    );
+        title: title,
+        message: message,
+        iconPath: iconPath,
+        timeoutSeconds: timeoutSeconds,
+        urgencyLevel: urgencyLevel);

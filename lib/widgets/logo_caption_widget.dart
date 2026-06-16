@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:pi_task_watch/theme/app_theme.dart';
 
 class LogoCaptionWidget extends StatelessWidget {
   final double imageWidth;
@@ -32,20 +34,15 @@ class LogoCaptionWidget extends StatelessWidget {
             height: scaledImageHeight,
             fit: BoxFit.contain,
           ),
-          SizedBox(width: 12 * zoomPercentage),
+          SizedBox(width: 8 * zoomPercentage),
           Text(
             'PI Task Watch',
-            style:
-                captionStyle?.copyWith(
-                  fontSize: (captionStyle?.fontSize ?? 20) * zoomPercentage,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                ) ??
-                Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontSize: 20 * zoomPercentage,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                ),
+            style: GoogleFonts.spaceGrotesk(
+              fontSize: 22 * zoomPercentage,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.primary,
+              letterSpacing: -0.5,
+            ),
           ),
         ],
       ),

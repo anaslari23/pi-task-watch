@@ -25,7 +25,7 @@ set BUILD_TOOL_PKG_DIR_POSIX=%BUILD_TOOL_PKG_DIR:\=/%
     echo.
     echo dependencies:
     echo   build_tool:
-    echo     path: %BUILD_TOOL_PKG_DIR_POSIX%
+    echo     path: "%BUILD_TOOL_PKG_DIR_POSIX%"
 ) >pubspec.yaml
 
 if not exist bin (
@@ -39,11 +39,11 @@ if not exist bin (
     echo ^}
 ) >bin\build_tool_runner.dart
 
-SET PRECOMPILED=bin\build_tool_runner.dill
+SET PRECOMPILED="bin\build_tool_runner.dill"
 
 REM To detect changes in package we compare output of DIR /s (recursive)
-set PREV_PACKAGE_INFO=.dart_tool\package_info.prev
-set CUR_PACKAGE_INFO=.dart_tool\package_info.cur
+set PREV_PACKAGE_INFO=".dart_tool\package_info.prev"
+set CUR_PACKAGE_INFO=".dart_tool\package_info.cur"
 
 DIR "%BUILD_TOOL_PKG_DIR%" /s > "%CUR_PACKAGE_INFO%_orig"
 
@@ -75,13 +75,13 @@ If %ERRORLEVEL% neq 0 (
 
 REM There is no CUR_PACKAGE_INFO it was renamed in previous step to %PREV_PACKAGE_INFO%
 REM which means  we need to do pub get and precompile
-if not exist "%PRECOMPILED%" (
+if not exist %PRECOMPILED% (
     echo Running pub get in "%cd%"
     "%DART%" pub get --no-precompile
     "%DART%" compile kernel bin/build_tool_runner.dart
 )
 
-"%DART%" "%PRECOMPILED%" %*
+"%DART%" %PRECOMPILED% %*
 
 REM 253 means invalid snapshot version.
 If %ERRORLEVEL% equ 253 (

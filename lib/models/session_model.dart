@@ -1,5 +1,5 @@
-import '../exports.dart';
-import '../utils/date_to_simple_string.dart';
+import 'package:pi_task_watch/exports.dart';
+import 'package:pi_task_watch/utils/date_to_simple_string.dart';
 
 class SessionModel {
   //
@@ -89,15 +89,14 @@ class SessionModel {
       startTime: DateTime.parse(json['startTime']),
       endTime: DateTime.parse(json['endTime']),
       duration: Duration(seconds: json['duration']),
-      activities:
-          (json['activities'] as List)
-              .map(
-                (activity) => UserActivityType.values.firstWhere(
-                  (type) => type.name == activity,
-                  orElse: () => UserActivityType.values.first,
-                ),
-              )
-              .toList(),
+      activities: (json['activities'] as List)
+          .map(
+            (activity) => UserActivityType.values.firstWhere(
+              (type) => type.name == activity,
+              orElse: () => UserActivityType.values.first,
+            ),
+          )
+          .toList(),
       screenshotImage: json['screenshotImage'],
       isSynced: json['isSynced'] ?? false,
       isIdleSession: json['isIdleSession'] ?? false,
@@ -108,32 +107,29 @@ class SessionModel {
 
   //
   Map<String, dynamic> toJsonForAPi() => {
-    "session_id": uniqueId,
-    "timesheet_id": timesheetId,
-    "start_date": dateToSimpleString(startTime),
-    "end_date": dateToSimpleString(endTime),
-    "user_id": userId,
-    "project_id": project.id,
-    "task_id": task.id,
-    "screenshot_list":
-        screenshotImage == null
+        "session_id": uniqueId,
+        "timesheet_id": timesheetId,
+        "start_date": dateToSimpleString(startTime),
+        "end_date": dateToSimpleString(endTime),
+        "user_id": userId,
+        "project_id": project.id,
+        "task_id": task.id,
+        "screenshot_list": screenshotImage == null
             ? []
             : [
-              {
-                "url": screenshotImage!,
-                "timestamp": dateToSimpleString(endTime),
-                "tracker_timestamp": "00:00:00",
-              },
-            ],
-    "mouse_click_count":
-        activities
+                {
+                  "url": screenshotImage!,
+                  "timestamp": dateToSimpleString(endTime),
+                  "tracker_timestamp": "00:00:00",
+                },
+              ],
+        "mouse_click_count": activities
             .where((activity) => activity == UserActivityType.mouseClick)
             .length,
-    "keyboard_press_count":
-        activities
+        "keyboard_press_count": activities
             .where((activity) => activity == UserActivityType.keyboardPress)
             .length,
-    "screenshot_count": screenshotImage == null ? 0 : 1,
-  };
+        "screenshot_count": screenshotImage == null ? 0 : 1,
+      };
   //
 }

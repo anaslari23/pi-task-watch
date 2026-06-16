@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:pi_task_watch/widgets/custom_header.dart';
 
@@ -8,6 +9,13 @@ class AppWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (Platform.isAndroid || Platform.isIOS) {
+      return Scaffold(
+        body: SafeArea(
+          child: child,
+        ),
+      );
+    }
     return Scaffold(
       body: Column(
         children: [

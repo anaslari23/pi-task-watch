@@ -1,5 +1,6 @@
 use anyhow::{anyhow, Context, Result};
 use base64::{Engine as _, engine::general_purpose};
+#[cfg(any(target_os = "windows", target_os = "macos", target_os = "linux"))]
 use screenshots::Screen;
 use std::io::Cursor;
 use std::env;
@@ -321,47 +322,54 @@ pub fn take_full_screenshot() -> Result<String> {
 }
 
 pub fn take_screenshot_with_screenshots_crate() -> Result<String> {
-    let start_time = Instant::now();
-    
-    println!("[SCREENSHOT][screenshots] Getting list of screens");
-    // Get all screens
-    let screens = Screen::all().map_err(|e| anyhow!("Failed to get screens: {}", e))?;
-    
-    println!("[SCREENSHOT][screenshots] Found {} screens", screens.len());
-    
-    if screens.is_empty() {
-        return Err(anyhow!("No screens found"));
+    #[cfg(any(target_os = "windows", target_os = "macos", target_os = "linux"))]
+    {
+        let start_time = Instant::now();
+        
+        println!("[SCREENSHOT][screenshots] Getting list of screens");
+        // Get all screens
+        let screens = Screen::all().map_err(|e| anyhow!("Failed to get screens: {}", e))?;
+        
+        println!("[SCREENSHOT][screenshots] Found {} screens", screens.len());
+        
+        if screens.is_empty() {
+            return Err(anyhow!("No screens found"));
+        }
+        
+        // Use the primary screen (first one)
+        let screen = screens[0].clone(); // Use index access and clone for simplicity
+        println!("[SCREENSHOT][screenshots] Using primary screen: {}x{} at position ({}, {})", 
+                 screen.display_info.width, screen.display_info.height,
+                 screen.display_info.x, screen.display_info.y);
+        
+        // Capture the entire screen
+        println!("[SCREENSHOT][screenshots] Capturing screen");
+        let image = screen
+            .capture()
+            .map_err(|e| anyhow!("Failed to capture screenshot: {}", e))?;
+        
+        println!("[SCREENSHOT][screenshots] Image captured: {}x{}", image.width(), image.height());
+        
+        // Write image to a PNG buffer using a Cursor (which implements both Write and Seek)
+        println!("[SCREENSHOT][screenshots] Encoding to PNG");
+        let mut buffer = Cursor::new(Vec::new());
+        image.write_to(&mut buffer, image::ImageOutputFormat::Png)
+             .map_err(|e| anyhow!("Failed to encode image: {}", e))?;
+        let buffer = buffer.into_inner();
+        
+        // Convert the buffer to a base64 string
+        println!("[SCREENSHOT][screenshots] Converting to base64");
+        let base64_string = general_purpose::STANDARD.encode(&buffer);
+        
+        let elapsed = start_time.elapsed();
+        println!("[SCREENSHOT][screenshots] Complete: Generated screenshot in {:.2?}", elapsed);
+        
+        Ok(base64_string)
     }
-    
-    // Use the primary screen (first one)
-    let screen = screens[0].clone(); // Use index access and clone for simplicity
-    println!("[SCREENSHOT][screenshots] Using primary screen: {}x{} at position ({}, {})", 
-             screen.display_info.width, screen.display_info.height,
-             screen.display_info.x, screen.display_info.y);
-    
-    // Capture the entire screen
-    println!("[SCREENSHOT][screenshots] Capturing screen");
-    let image = screen
-        .capture()
-        .map_err(|e| anyhow!("Failed to capture screenshot: {}", e))?;
-    
-    println!("[SCREENSHOT][screenshots] Image captured: {}x{}", image.width(), image.height());
-    
-    // Write image to a PNG buffer using a Cursor (which implements both Write and Seek)
-    println!("[SCREENSHOT][screenshots] Encoding to PNG");
-    let mut buffer = Cursor::new(Vec::new());
-    image.write_to(&mut buffer, image::ImageOutputFormat::Png)
-         .map_err(|e| anyhow!("Failed to encode image: {}", e))?;
-    let buffer = buffer.into_inner();
-    
-    // Convert the buffer to a base64 string
-    println!("[SCREENSHOT][screenshots] Converting to base64");
-    let base64_string = general_purpose::STANDARD.encode(&buffer);
-    
-    let elapsed = start_time.elapsed();
-    println!("[SCREENSHOT][screenshots] Complete: Generated screenshot in {:.2?}", elapsed);
-    
-    Ok(base64_string)
+    #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
+    {
+        Err(anyhow!("Screenshots are not supported on this platform"))
+    }
 }
 
 #[cfg(target_os = "linux")]
@@ -1914,7 +1922,7 @@ pub fn extract_bundled_nircmd() -> Result<String> {
         .to_path_buf();
 
     // Flutter asset paths to check (multiple possible locations)
-    let asset_paths = vec![
+    let mut asset_paths = vec![
         exe_dir.join("data").join("flutter_assets").join("assets").join("nircmd.exe"),      // Release build
         exe_dir.join("data").join("flutter_assets").join("assets").join("nircmdc.exe"),     // Alternative release
         exe_dir.join("flutter_assets").join("assets").join("nircmd.exe"),                   // Debug build
@@ -1935,7 +1943,7 @@ pub fn extract_bundled_nircmd() -> Result<String> {
         ];
         for path in cwd_paths {
             if !asset_paths.contains(&path) {
-                // Add to search paths if not already present
+                asset_paths.push(path);
             }
         }
     }

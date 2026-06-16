@@ -1,7 +1,7 @@
 import 'package:intl/intl.dart';
 import 'package:pi_task_watch/utils/date_to_simple_string.dart';
 
-import '../exports.dart';
+import 'package:pi_task_watch/exports.dart';
 
 /// Model representing a work session that has been started
 class StartWorkModel {
@@ -82,48 +82,20 @@ class StartWorkModel {
   }
 
   Map<String, dynamic> toCustomJson() {
-    return toJsonForAPi();
     return {
       'id': timesheetId,
-      "timesheet_id": timesheetId,
+      'timesheet_id': timesheetId,
       'task_id': task.id,
       'task_name': task.name,
       'user_id': user.userId,
       'project_id': project.id,
       'project_name': project.name,
       'date': DateFormat('yyyy-MM-dd').format(startTime),
-      'start_date': dateToSimpleString(startTime),
-      'created_at': startTime.toIso8601String(),
-      // 'end_date': dateToSimpleString(endDate), // Added field
-
-      // 'description': notes,
-      // 'notes': notes,
-      // 'time_spent_in_seconds': timeSpentInSeconds,
-      // "time_spent":
-      //     Duration(seconds: timeSpentInSeconds).inMinutes +
-      //     1, // Changed to seconds
-
-      // 'mouse_click_count': mouseClickCount,
-      // 'keyboard_press_count': keyboardPressCount,
-      // 'screenshot_count': screenshotCount, // Added field
+      'created_at': dateToSimpleString(startTime),
+      'updated_at': dateToSimpleString(DateTime.now()),
+      'description': notes,
+      'notes': notes,
+      'time_spent': duration.inMinutes,
     };
   }
-
-  //
-  Map<String, dynamic> toJsonForAPi() => {
-    'id': timesheetId,
-    'timesheet_id': timesheetId,
-    'task_id': task.id,
-    'task_name': task.name,
-    'user_id': user.userId,
-    'project_id': project.id,
-    'project_name': project.name,
-    'date': DateFormat('yyyy-MM-dd').format(DateTime.now()),
-    'created_at': dateToSimpleString(DateTime.now()),
-    'updated_at': dateToSimpleString(DateTime.now()),
-    'description': notes,
-    'notes': notes,
-    'time_spent': duration.inMinutes,
-  };
-  //
 }

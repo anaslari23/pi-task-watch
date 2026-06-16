@@ -1,10 +1,12 @@
 import 'package:pi_task_watch/exports.dart';
 
-import '../controllers/timesheet_controller.dart';
-import '../models/timesheet_model.dart';
+import 'package:pi_task_watch/controllers/timesheet_controller.dart';
+import 'package:pi_task_watch/models/timesheet_model.dart';
 
 // Jayadrata dxx ggJaYadf
 //
+import 'package:google_fonts/google_fonts.dart';
+
 class StartTrackerForm extends StatefulWidget {
   final TaskModel? task;
   const StartTrackerForm({super.key, this.task});
@@ -14,8 +16,6 @@ class StartTrackerForm extends StatefulWidget {
 }
 
 class _StartTrackerFormState extends State<StartTrackerForm> {
-  // final ApiController _apiController = Get.find<ApiController>();
-  // project controller
   final ProjectController _projectController = Get.find<ProjectController>();
   final TaskController _taskController = Get.find<TaskController>();
 
@@ -39,7 +39,6 @@ class _StartTrackerFormState extends State<StartTrackerForm> {
   @override
   void initState() {
     super.initState();
-    // Store listener reference for proper disposal
     _textControllerListener = () {
       if (mounted) setState(() {});
     };
@@ -143,7 +142,6 @@ class _StartTrackerFormState extends State<StartTrackerForm> {
   }
 
   void _startTracking() async {
-    // Debounce: Prevent rapid multiple clicks
     final now = DateTime.now();
     if (_lastClickTime != null &&
         now.difference(_lastClickTime!).inMilliseconds < 1000) {
@@ -151,7 +149,6 @@ class _StartTrackerFormState extends State<StartTrackerForm> {
     }
     _lastClickTime = now;
 
-    // Prevent multiple simultaneous submissions
     if (_isSubmitting ||
         _isInitializing ||
         _isLoadingProjects ||
@@ -182,7 +179,6 @@ class _StartTrackerFormState extends State<StartTrackerForm> {
         return;
       }
 
-      // Find the matching project from projects list based on task's projectId
       final projectModel = projects.firstWhereOrNull(
         (project) => project.id == selectedTaskModel.projectId,
       );
@@ -235,17 +231,12 @@ class _StartTrackerFormState extends State<StartTrackerForm> {
       }
 
       _noteController.text = exitingTimesheet?.description ?? '';
-      // Add setState to update UI after loading notes
       if (mounted) setState(() {});
-    } catch (e) {
-      // Handle error silently or show snackbar if needed
-    }
-    // Removed the finally block with isLoading since we handle loading in _initializeForm
+    } catch (e) {}
   }
 
   @override
   void dispose() {
-    // Properly remove the stored listener reference
     _noteController.removeListener(_textControllerListener);
     _noteController.dispose();
     super.dispose();
@@ -263,23 +254,17 @@ class _StartTrackerFormState extends State<StartTrackerForm> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
     if (_isInitializing) {
       return Container(
         width: MediaQuery.of(context).size.width * 0.85,
         constraints: const BoxConstraints(maxWidth: 350),
         padding: const EdgeInsets.all(24),
-        child: Column(
+        child: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const CircularProgressIndicator(),
-            const SizedBox(height: 16),
-            Text(
-              'Loading...',
-              style: TextStyle(color: colorScheme.onSurface.withOpacity(0.7)),
-            ),
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Loading...'),
           ],
         ),
       );
@@ -288,203 +273,113 @@ class _StartTrackerFormState extends State<StartTrackerForm> {
     return Container(
       width: MediaQuery.of(context).size.width * 0.85,
       constraints: const BoxConstraints(maxWidth: 350),
-      padding: const EdgeInsets.all(0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Project Field
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceVariant.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(
-                color: colorScheme.outline.withOpacity(0.2),
-                width: 1,
-              ),
-            ),
-            child: Row(
-              children: [
-                Text(
-                  'Project: ',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: colorScheme.onSurface.withOpacity(0.8),
-                  ),
-                ),
-                Expanded(
-                  child:
-                      _isLoadingProjects
-                          ? Row(
-                            children: [
-                              SizedBox(
-                                width: 12,
-                                height: 12,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    colorScheme.primary,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Loading projects...',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontStyle: FontStyle.italic,
-                                  color: colorScheme.onSurface.withOpacity(0.5),
-                                ),
-                              ),
-                            ],
-                          )
-                          : Text(
-                            selectedProjectName ?? 'No project',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color:
-                                  selectedProjectName != null
-                                      ? colorScheme.onSurface
-                                      : colorScheme.onSurface.withOpacity(0.5),
-                            ),
-                          ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 3),
-
-          // Task Field
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceVariant.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(
-                color: colorScheme.outline.withOpacity(0.2),
-                width: 1,
-              ),
-            ),
-            child: Row(
-              children: [
-                Text(
-                  'Task: ',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: colorScheme.onSurface.withOpacity(0.8),
-                  ),
-                ),
-                Expanded(
-                  child:
-                      _isLoadingTasks
-                          ? Row(
-                            children: [
-                              SizedBox(
-                                width: 12,
-                                height: 12,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    colorScheme.primary,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Loading tasks...',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontStyle: FontStyle.italic,
-                                  color: colorScheme.onSurface.withOpacity(0.5),
-                                ),
-                              ),
-                            ],
-                          )
-                          : Text(
-                            selectedTaskName ?? 'No task',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color:
-                                  selectedTaskName != null
-                                      ? colorScheme.onSurface
-                                      : colorScheme.onSurface.withOpacity(0.5),
-                            ),
-                          ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Notes Field
+          _buildInfoRow('Project', selectedProjectName ?? 'No project',
+              Icons.folder_open_rounded, _isLoadingProjects),
+          const SizedBox(height: 12),
+          _buildInfoRow('Task', selectedTaskName ?? 'No task',
+              Icons.assignment_rounded, _isLoadingTasks),
+          const SizedBox(height: 20),
           Text(
             'Notes *',
-            style: TextStyle(
+            style: GoogleFonts.inter(
               fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: colorScheme.onSurface,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF25181E),
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
           CompactTextField(
             controller: _noteController,
-            hintText: 'Add notes about what you\'re working on...',
-            maxLines: 5,
+            hintText: 'What are you working on?',
+            maxLines: 4,
             autogrow: false,
-            // Remove the enabled parameter if it's not supported by CompactTextField
           ),
-          const SizedBox(height: 16),
-
-          // Action Buttons
+          const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               TextButton(
                 onPressed:
                     (_isSubmitting || _isLoading) ? null : () => Get.back(),
-                child: Text(
-                  'Cancel',
-                  style: TextStyle(
-                    color: colorScheme.onSurface.withOpacity(0.8),
-                  ),
-                ),
+                child: const Text('Cancel'),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               ElevatedButton(
                 onPressed: _canSubmit ? _startTracking : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colorScheme.primary,
-                  foregroundColor: colorScheme.onPrimary,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  // Add visual feedback during submission
-                  elevation: _isSubmitting ? 0 : 2,
-                ),
-                child:
-                    _isSubmitting
-                        ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
-                            ),
-                          ),
-                        )
-                        : const Text('Start'),
+                child: _isSubmitting
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Text('Start'),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(
+      String label, String value, IconData icon, bool isLoading) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.primary.withOpacity(0.05)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppTheme.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, size: 16, color: AppTheme.primary),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade500,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                isLoading
+                    ? const SizedBox(
+                        height: 14,
+                        width: 14,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(
+                        value,
+                        style: GoogleFonts.spaceGrotesk(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF25181E),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+              ],
+            ),
           ),
         ],
       ),

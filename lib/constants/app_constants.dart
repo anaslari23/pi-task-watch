@@ -3,21 +3,34 @@ class AppConstant {
 
   static const bool isDebug = false;
 
-  static const String apiScheme = isDebug ? "http" : "http";
+  static const String apiScheme = isDebug ? "https" : "https";
   //
-  static const String apiHostName = isDebug ? "192.168.1.17" : "192.168.1.32";
+  static const String apiHostName =
+      isDebug ? "app.primacyinfotech.com" : "app.primacyinfotech.com";
   //
-  static const int? apiPort = isDebug ? 8017 : 9070;
+  static const int apiPort = isDebug ? 8017 : 9070;
   //
   // Enable manual URL changes - user enters database URL
   static bool userCanChangeUrl = true;
   //
-  static String? userGivenApiServerUrl;
-  //
+  static String? _userGivenApiServerUrl;
+
+  static set userGivenApiServerUrl(String? value) {
+    if (value == null || value.isEmpty) {
+      _userGivenApiServerUrl = null;
+    } else {
+      // Remove trailing slash if present to prevent double slashes later
+      _userGivenApiServerUrl =
+          value.endsWith('/') ? value.substring(0, value.length - 1) : value;
+    }
+  }
+
+  static String? get userGivenApiServerUrl => _userGivenApiServerUrl;
+
   static String get apiServerUrl {
     // If user has given a URL and it's not empty, use it
-    if (userGivenApiServerUrl != null && userGivenApiServerUrl!.isNotEmpty) {
-      return userGivenApiServerUrl!;
+    if (_userGivenApiServerUrl != null && _userGivenApiServerUrl!.isNotEmpty) {
+      return _userGivenApiServerUrl!;
     }
     // Otherwise, fall back to the default URL from constants
     return apiPort != null
@@ -27,6 +40,7 @@ class AppConstant {
 
   //
   static String get apiBaseUrl => "$apiServerUrl/api";
+  static String get apiConfigUrl => "$apiServerUrl/";
 
   //
   // static const String debugDatabase = "";

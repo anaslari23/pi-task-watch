@@ -9,6 +9,7 @@ class AuthController extends GetxController {
   static const String _keyEmail = 'user_email';
   static const String _keyPassword = 'user_password';
   static const String _keyDb = 'user_db';
+  static const String _keyServerUrl = 'server_url';
   static const String _keyIsLoggedIn = 'is_logged_in';
 
   /// Safely converts any value to boolean
@@ -46,6 +47,22 @@ class AuthController extends GetxController {
   final Rx<SettingsModel?> _settings = Rx<SettingsModel?>(null);
   Rx<SettingsModel?> get settings => _settings;
 
+  /// Restores only the server URL from saved preferences
+  Future<void> restoreServerUrl() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final serverUrl = prefs.getString(_keyServerUrl) ?? '';
+      if (serverUrl.isNotEmpty) {
+        AppConstant.userGivenApiServerUrl = serverUrl;
+        // Ensure OdooRpcApiManager is also updated with the restored URL
+        OdooRpcApiManager.configure(serverUrl: serverUrl);
+        if (kDebugMode) print("🌐 Restored saved server URL: $serverUrl");
+      }
+    } catch (e) {
+      if (kDebugMode) print("❌ Error restoring server URL: $e");
+    }
+  }
+
   /// Simple auto-login method - checks for saved credentials and logs in if found
   Future<bool> attemptAutoLogin() async {
     try {
@@ -61,7 +78,7 @@ class AuthController extends GetxController {
         return false;
       }
 
-      if (kDebugMode) print("� Checking for saved credentials...");
+      if (kDebugMode) print("🔍 Checking for saved credentials...");
 
       final prefs = await SharedPreferences.getInstance();
       final isLoggedIn = prefs.getBool(_keyIsLoggedIn) ?? false;
@@ -79,6 +96,9 @@ class AuthController extends GetxController {
         if (kDebugMode) print("❌ Incomplete saved credentials");
         return false;
       }
+
+      // Restore server URL if it was saved (now call the dedicated method)
+      await restoreServerUrl();
 
       if (kDebugMode) {
         print("✅ Found complete credentials:");
@@ -116,6 +136,7 @@ class AuthController extends GetxController {
         await prefs.setString(_keyEmail, email);
         await prefs.setString(_keyPassword, password);
         await prefs.setString(_keyDb, db);
+        await prefs.setString(_keyServerUrl, AppConstant.apiServerUrl);
         await prefs.setBool(_keyIsLoggedIn, true);
         if (kDebugMode) {
           print("✅ Credentials saved successfully: email=$email, db=$db");
@@ -137,6 +158,7 @@ class AuthController extends GetxController {
       await prefs.remove(_keyEmail);
       await prefs.remove(_keyPassword);
       await prefs.remove(_keyDb);
+      await prefs.remove(_keyServerUrl);
       await prefs.setBool(_keyIsLoggedIn, false);
       if (kDebugMode) print("🗑️ All saved credentials cleared");
     } catch (e) {
@@ -165,44 +187,172 @@ class AuthController extends GetxController {
     }
   }
 
-  //
+  /// Fetches database list from /public/config endpoint
+  /// Fetches database list from /public/config endpoint with fallback to Odoo RPC
+  /// Fetches database list from /public/config endpoint with fallback to Odoo RPC
   Future<List<String>> getAllDb() async {
     try {
       // Get the base server URL entered by user
-      final baseUrl = AppConstant.apiServerUrl;
+      final baseUrl = AppConstant.apiConfigUrl; // Changed from apiConfigUrl
 
       if (baseUrl.isEmpty) {
         print("❌ No server URL configured. Please enter a server URL first.");
         return [];
       }
 
-      // Always print the database fetch URL (not just in debug mode)
+      // Always print the database fetch URL
       print(
         "╔════════════════════════════════════════════════════════════════",
       );
       print("║ 📡 FETCHING DATABASE LIST");
-      print("║ Server URL: $baseUrl");
-      print("║ Using OdooRpcApiManager.getDbList()");
+      print("║ Base URL (apiConfigUrl): $baseUrl");
+      print("║ Endpoint: public/config");
+      print("║ Full URL: ${baseUrl}public/config");
+      print("║ Attempting /public/config endpoint first...");
       print(
         "╚════════════════════════════════════════════════════════════════",
       );
 
-      // Use the proper Odoo RPC method to get database list
+      // Try Method 1: Use /public/config endpoint
+      // Use apiConfigUrl (has trailing /) + endpoint
+      try {
+        final apiResponse = await ApiManager.getRequest(
+          endPoint: "${baseUrl}public/config",
+          isFullUrl: true,
+        );
+
+        print("📥 Config API Response received");
+        print("   Status Code: ${apiResponse.statusCode}");
+        print("   Raw Response Body: ${apiResponse.rawResponse.body}");
+        print("   Parsed Body: ${apiResponse.body}");
+        print("   Is Success: ${apiResponse.isSuccess}");
+
+        // Check if we got a valid response (200 status code)
+        if (apiResponse.statusCode == 200 && apiResponse.body != null) {
+          // Extract the database list from the response
+          List<String> databases = [];
+
+          // The response format is: {"list_db": false, "db_name": ["primacy"]}
+          // We need to extract from the body directly, not from apiResponse.data
+          if (apiResponse.body is Map) {
+            final bodyMap = apiResponse.body as Map;
+
+            print("   Response body keys: ${bodyMap.keys.toList()}");
+
+            // Try to find database list in various possible keys
+            if (bodyMap.containsKey('db_name')) {
+              final dbList = bodyMap['db_name'];
+              if (dbList is List) {
+                databases = dbList.map((e) => e.toString()).toList();
+                print("   ✅ Found databases in 'db_name': $databases");
+              }
+            } else if (bodyMap.containsKey('databases')) {
+              final dbList = bodyMap['databases'];
+              if (dbList is List) {
+                databases = dbList.map((e) => e.toString()).toList();
+                print("   ✅ Found databases in 'databases': $databases");
+              }
+            } else if (bodyMap.containsKey('database')) {
+              final dbList = bodyMap['database'];
+              if (dbList is List) {
+                databases = dbList.map((e) => e.toString()).toList();
+                print("   ✅ Found databases in 'database': $databases");
+              }
+            } else if (bodyMap.containsKey('db_list')) {
+              final dbList = bodyMap['db_list'];
+              if (dbList is List) {
+                databases = dbList.map((e) => e.toString()).toList();
+                print("   ✅ Found databases in 'db_list': $databases");
+              }
+            } else if (bodyMap.containsKey('result')) {
+              final result = bodyMap['result'];
+              if (result is List) {
+                databases = result.map((e) => e.toString()).toList();
+                print("   ✅ Found databases in 'result': $databases");
+              } else if (result is Map && result.containsKey('databases')) {
+                final dbList = result['databases'];
+                if (dbList is List) {
+                  databases = dbList.map((e) => e.toString()).toList();
+                  print(
+                      "   ✅ Found databases in 'result.databases': $databases");
+                }
+              }
+            }
+
+            // If no databases found in expected keys, log all available keys
+            if (databases.isEmpty) {
+              print(
+                "⚠️ No databases found in /public/config. Available keys: ${bodyMap.keys.toList()}",
+              );
+            }
+          } else if (apiResponse.body is List) {
+            // If the response is directly a list
+            databases =
+                (apiResponse.body as List).map((e) => e.toString()).toList();
+            print("   ✅ Response body is directly a list: $databases");
+          }
+
+          if (databases.isNotEmpty) {
+            print(
+              "✅ Successfully fetched ${databases.length} database(s) from /public/config: $databases",
+            );
+            return databases;
+          }
+        } else {
+          print(
+            "⚠️ /public/config endpoint failed or returned no data (Status: ${apiResponse.statusCode})",
+          );
+          if (!apiResponse.isSuccess) {
+            print("   Error message: ${apiResponse.message}");
+          }
+        }
+      } catch (e) {
+        print("⚠️ /public/config endpoint error: $e");
+        // Don't print full stack trace here, just the error message
+      }
+
+      // Method 2: Fallback to Odoo RPC method
+      print("\n║ 🔄 Falling back to Odoo RPC getDbList method...");
+
       final dbListResponse = await OdooRpcApiManager.getDbList(
-        serverUrl: baseUrl,
+        serverUrl: baseUrl, // Use baseUrl without trailing slash
       );
 
-      print("📥 Database API Response received");
-      print("   Raw data: ${dbListResponse.rawData}");
+      print("📥 Odoo RPC Response received");
+      print("   Is Error: ${dbListResponse.isError}");
+
+      if (dbListResponse.rawData != null) {
+        print("   Raw data type: ${dbListResponse.rawData.runtimeType}");
+        // Only print first 200 chars to avoid huge logs
+        final dataStr = dbListResponse.rawData.toString();
+        print(
+            "   Raw data: ${dataStr.length > 200 ? dataStr.substring(0, 200) + '...' : dataStr}");
+      } else {
+        print("   Raw data is null");
+      }
 
       // Check if the request was successful
       if (dbListResponse.isError) {
-        print("❌ Error fetching databases: ${dbListResponse.message}");
+        // Print a shorter error message
+        final errorMsg = dbListResponse.message;
+        print("❌ Error fetching databases via RPC");
+        if (errorMsg.contains('502')) {
+          print(
+              "   Server returned 502 Bad Gateway - server may be down or unreachable");
+        } else if (errorMsg.contains('404')) {
+          print("   Server returned 404 Not Found - endpoint doesn't exist");
+        } else {
+          // Print just the first line of error
+          final firstLine = errorMsg.split('\n').first;
+          print(
+              "   Error: ${firstLine.length > 100 ? firstLine.substring(0, 100) + '...' : firstLine}");
+        }
         return [];
       }
 
       // Extract the database list
-      // rawData is a Map like: {result: [primacy], success: true, message: ...}
+      List<String> databases = [];
+
       if (dbListResponse.rawData != null) {
         dynamic dbList;
 
@@ -217,18 +367,25 @@ class AuthController extends GetxController {
 
         // Now check if we have a valid list
         if (dbList != null && dbList is List) {
-          final result = dbList.map((e) => e.toString()).toList();
-          print("✅ Successfully fetched ${result.length} database(s): $result");
-          return result;
+          databases = dbList.map((e) => e.toString()).toList();
         }
       }
 
-      print("⚠️ No database list found in response");
-      print("   Response data: ${dbListResponse.rawData}");
+      if (databases.isNotEmpty) {
+        print(
+          "✅ Successfully fetched ${databases.length} database(s) via RPC: $databases",
+        );
+        return databases;
+      }
+
+      print("⚠️ No databases found via any method");
       return [];
     } catch (e) {
       print("❌ Error fetching databases: $e");
-      print("   Stack trace: ${StackTrace.current}");
+      // Only print stack trace in debug mode
+      if (kDebugMode) {
+        print("   Stack trace: ${StackTrace.current}");
+      }
       return [];
     }
   }
@@ -453,14 +610,51 @@ class AuthController extends GetxController {
     }
   }
 
-  // Logout method to clear credentials
+  // Logout method to clear credentials and all cached data
   Future<void> logout() async {
     try {
+      if (kDebugMode) print('🚪 [LOGOUT] Starting logout process...');
+
+      // 1. Clear user data
       _user.value = null;
+      _settings.value = null;
+
+      if (kDebugMode) print('🚪 [LOGOUT] Cleared user and settings data');
+
+      // 2. Clear saved credentials from SharedPreferences
       await clearSavedCredentials();
-      // Add any additional logout logic here
+
+      if (kDebugMode) print('🚪 [LOGOUT] Cleared saved credentials');
+
+      // 3. Clear all SharedPreferences (complete cache clear)
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+
+      if (kDebugMode) print('🚪 [LOGOUT] Cleared all SharedPreferences cache');
+
+      // 4. Clear Odoo session
+      OdooRpcApiManager.clearSession();
+
+      if (kDebugMode) print('🚪 [LOGOUT] Cleared Odoo session');
+
+      // 5. Reset tracker controller if it exists
+      try {
+        final trackerController = Get.find<TrackerController>();
+        trackerController.setUser(user: null);
+        if (kDebugMode) print('🚪 [LOGOUT] Reset tracker controller');
+      } catch (e) {
+        if (kDebugMode) print('🚪 [LOGOUT] Tracker controller not found (OK)');
+      }
+
+      // 6. Navigate to login screen
+      Get.offAllNamed(SigninScreen.routeName);
+
+      if (kDebugMode) print('✅ [LOGOUT] Logout completed successfully');
+
+      showToast('Logged out successfully', idSuccess: true);
     } catch (e) {
-      if (kDebugMode) print("Error during logout: $e");
+      if (kDebugMode) print('🚨 [LOGOUT] Error during logout: $e');
+      showToast('Logout failed. Please try again.', idSuccess: false);
     }
   }
 

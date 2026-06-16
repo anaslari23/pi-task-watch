@@ -1,6 +1,6 @@
 import 'package:pi_task_watch/managers/api_manager.dart';
 
-import '../models/models.dart';
+import 'package:pi_task_watch/models/models.dart';
 
 class ApiService {
   Future<bool> sendSessionScreenshot({required SessionModel session}) async {

@@ -4,6 +4,9 @@ import 'package:window_manager/window_manager.dart';
 import 'package:window_to_front/window_to_front.dart';
 
 Future<void> focusMyWindow() async {
+  if (!Platform.isWindows && !Platform.isMacOS && !Platform.isLinux) {
+    return;
+  }
   try {
     await WindowManager.instance.focus();
     await WindowManager.instance.show();

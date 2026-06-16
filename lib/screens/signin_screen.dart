@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
-import '../exports.dart';
+import 'package:pi_task_watch/exports.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SigninScreen extends StatefulWidget {
   static const String routeName = '/signin';
@@ -46,26 +47,20 @@ class _SigninScreenState extends State<SigninScreen>
     );
     _animationController.forward();
 
-    // Fetch databases with current server URL
-    if (_isValidUrl(AppConstant.apiServerUrl)) {
-      _fetchDatabases();
-    }
-
-    // Fix: Schedule auto-login with a microtask to avoid build phase conflicts
+    // Restore server URL and attempt auto-login
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (kDebugMode) {
-        print("🔐 SigninScreen: Starting auto-login check...");
-        // Debug what's currently saved
-        await _authController.debugSavedCredentials();
-      }
+      await _authController.restoreServerUrl();
 
-      try {
-        final success = await _authController.attemptAutoLogin();
-        if (kDebugMode) {
-          print(success ? "✅ Auto-login successful" : "❌ Auto-login failed");
-        }
-      } catch (e) {
-        if (kDebugMode) print("⚠️ Auto-login error: $e");
+      // Update the controller text with the restored URL
+      _serverUrlController.text = AppConstant.apiServerUrl;
+      if (mounted) setState(() {});
+
+      // Attempt auto-login if credentials exist
+      final result = await _authController.attemptAutoLogin();
+
+      // If auto-login was not successful or not attempted, fetch databases for current URL
+      if (!result && _isValidUrl(AppConstant.apiServerUrl)) {
+        _fetchDatabases();
       }
     });
   }
@@ -232,12 +227,8 @@ class _SigninScreenState extends State<SigninScreen>
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.pink.shade50, Colors.pink.shade100],
-          ),
+        decoration: const BoxDecoration(
+          gradient: AppTheme.editorialGradient,
         ),
         child: SafeArea(
           child: FadeTransition(
@@ -252,24 +243,13 @@ class _SigninScreenState extends State<SigninScreen>
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        LogoCaptionWidget(),
+                        const LogoCaptionWidget(),
+                        const SizedBox(height: 12),
                         Container(
                           padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
+                          decoration: AppTheme.glassDecoration(
+                            borderRadius: 32,
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.08),
-                                spreadRadius: 5,
-                                blurRadius: 15,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
-                            border: Border.all(
-                              color: Colors.grey.shade200,
-                              width: 1,
-                            ),
                           ),
                           child: Obx(
                             () => Column(
@@ -280,33 +260,30 @@ class _SigninScreenState extends State<SigninScreen>
                                     _authController.timesheetLoading.value) ...[
                                   Container(
                                     width: double.infinity,
-                                    padding: const EdgeInsets.all(12),
+                                    padding: const EdgeInsets.all(16),
                                     decoration: BoxDecoration(
-                                      color: theme.primaryColor.withOpacity(
-                                        0.1,
-                                      ),
-                                      borderRadius: BorderRadius.circular(8),
+                                      color:
+                                          AppTheme.secondary.withOpacity(0.05),
+                                      borderRadius: BorderRadius.circular(16),
                                       border: Border.all(
-                                        color: theme.primaryColor.withOpacity(
-                                          0.3,
-                                        ),
+                                        color:
+                                            AppTheme.secondary.withOpacity(0.1),
                                         width: 1,
                                       ),
                                     ),
                                     child: Row(
                                       children: [
-                                        SizedBox(
-                                          width: 20,
-                                          height: 20,
+                                        const SizedBox(
+                                          width: 18,
+                                          height: 18,
                                           child: CircularProgressIndicator(
                                             strokeWidth: 2,
                                             valueColor:
                                                 AlwaysStoppedAnimation<Color>(
-                                                  theme.primaryColor,
-                                                ),
+                                                    AppTheme.secondary),
                                           ),
                                         ),
-                                        const SizedBox(width: 12),
+                                        const SizedBox(width: 16),
                                         Expanded(
                                           child: Column(
                                             crossAxisAlignment:
@@ -315,39 +292,31 @@ class _SigninScreenState extends State<SigninScreen>
                                               Text(
                                                 () {
                                                   if (_authController
-                                                      .authLoading
-                                                      .value) {
-                                                    return 'Auto-login in progress...';
+                                                      .authLoading.value) {
+                                                    return 'Authenticating...';
                                                   } else if (_authController
-                                                      .settingsLoading
-                                                      .value) {
-                                                    return 'Loading user settings...';
+                                                      .settingsLoading.value) {
+                                                    return 'Syncing Profile...';
                                                   } else if (_authController
-                                                      .timesheetLoading
-                                                      .value) {
-                                                    return 'Loading timesheet data...';
+                                                      .timesheetLoading.value) {
+                                                    return 'Loading Logs...';
                                                   } else {
-                                                    return 'Initializing...';
+                                                    return 'Connecting...';
                                                   }
                                                 }(),
-                                                style: theme
-                                                    .textTheme
-                                                    .bodyMedium
-                                                    ?.copyWith(
-                                                      color: theme.primaryColor,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                    ),
+                                                style: GoogleFonts.inter(
+                                                  color: AppTheme.secondary,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 13,
+                                                ),
                                               ),
                                               const SizedBox(height: 2),
                                               Text(
-                                                'Please wait while we sign you in automatically',
-                                                style: theme.textTheme.bodySmall
-                                                    ?.copyWith(
-                                                      color:
-                                                          Colors.grey.shade600,
-                                                      fontSize: 11,
-                                                    ),
+                                                'Restoring your session...',
+                                                style: GoogleFonts.inter(
+                                                  color: Colors.grey.shade600,
+                                                  fontSize: 10,
+                                                ),
                                               ),
                                             ],
                                           ),
@@ -355,13 +324,12 @@ class _SigninScreenState extends State<SigninScreen>
                                       ],
                                     ),
                                   ),
-                                  const SizedBox(height: 16),
+                                  const SizedBox(height: 20),
                                 ],
 
                                 // Wrap the entire form in IgnorePointer when auto-login is in progress
                                 IgnorePointer(
-                                  ignoring:
-                                      _authController.authLoading.value ||
+                                  ignoring: _authController.authLoading.value ||
                                       _authController.settingsLoading.value ||
                                       _authController.timesheetLoading.value,
                                   child: Column(
@@ -421,8 +389,7 @@ class _SigninScreenState extends State<SigninScreen>
                                                         _serverUrlController
                                                             .text
                                                             .trim();
-                                                    final hasUserUrl =
-                                                        AppConstant
+                                                    final hasUserUrl = AppConstant
                                                                 .userGivenApiServerUrl !=
                                                             null &&
                                                         AppConstant
@@ -430,11 +397,12 @@ class _SigninScreenState extends State<SigninScreen>
                                                             .isNotEmpty;
                                                     final isValidCurrentUrl =
                                                         currentUrl.isNotEmpty &&
-                                                        _isValidUrl(currentUrl);
+                                                            _isValidUrl(
+                                                                currentUrl);
                                                     final urlChanged =
                                                         currentUrl !=
-                                                        AppConstant
-                                                            .apiServerUrl;
+                                                            AppConstant
+                                                                .apiServerUrl;
 
                                                     if (hasUserUrl &&
                                                         !urlChanged) {
@@ -464,22 +432,225 @@ class _SigninScreenState extends State<SigninScreen>
                                         ),
                                         const SizedBox(height: 12),
                                       ],
-                                      // Database selector
-                                      SearchableDropdown<String>(
-                                        value: _selectedDatabase,
-                                        items:
-                                            _loadingDatabases.value
+
+                                      // Database selector with enhanced display
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          // Database list info header
+                                          if (_databases.isNotEmpty ||
+                                              _loadingDatabases.value) ...[
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  bottom: 8),
+                                              child: Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons.storage,
+                                                    size: 14,
+                                                    color: Colors.grey.shade600,
+                                                  ),
+                                                  const SizedBox(width: 6),
+                                                  Text(
+                                                    _loadingDatabases.value
+                                                        ? 'Fetching databases...'
+                                                        : 'Found ${_databases.length} database${_databases.length != 1 ? 's' : ''}',
+                                                    style: theme
+                                                        .textTheme.bodySmall
+                                                        ?.copyWith(
+                                                      color: _loadingDatabases
+                                                              .value
+                                                          ? Colors
+                                                              .orange.shade700
+                                                          : Colors
+                                                              .green.shade700,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      fontSize: 11,
+                                                    ),
+                                                  ),
+                                                  if (_loadingDatabases
+                                                      .value) ...[
+                                                    const SizedBox(width: 8),
+                                                    SizedBox(
+                                                      width: 12,
+                                                      height: 12,
+                                                      child:
+                                                          CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                        valueColor:
+                                                            AlwaysStoppedAnimation<
+                                                                Color>(
+                                                          Colors
+                                                              .orange.shade700,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+
+                                          // Database dropdown
+                                          SearchableDropdown<String>(
+                                            value: _selectedDatabase,
+                                            items: _loadingDatabases.value
                                                 ? ["Loading databases..."]
-                                                : _databases,
-                                        hint: "Select Database",
-                                        onChanged: (value) {
-                                          setState(() {
-                                            _selectedDatabase = value;
-                                          });
-                                        },
-                                        searchController:
-                                            _databaseSearchController,
-                                        itemToString: (item) => item,
+                                                : _databases.isEmpty
+                                                    ? ["No databases found"]
+                                                    : _databases,
+                                            hint: _databases.isEmpty &&
+                                                    !_loadingDatabases.value
+                                                ? "No databases available"
+                                                : "Select Database",
+                                            onChanged: (value) {
+                                              // Don't allow selection of placeholder items
+                                              if (value !=
+                                                      "Loading databases..." &&
+                                                  value !=
+                                                      "No databases found") {
+                                                setState(() {
+                                                  _selectedDatabase = value;
+                                                });
+                                              }
+                                            },
+                                            searchController:
+                                                _databaseSearchController,
+                                            itemToString: (item) => item,
+                                          ),
+
+                                          // Show database list pills if available
+                                          if (_databases.isNotEmpty &&
+                                              !_loadingDatabases.value) ...[
+                                            const SizedBox(height: 8),
+                                            Container(
+                                              padding: const EdgeInsets.all(10),
+                                              decoration: BoxDecoration(
+                                                color: Colors.blue.shade50,
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                                border: Border.all(
+                                                  color: Colors.blue.shade200,
+                                                  width: 1,
+                                                ),
+                                              ),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Icon(
+                                                        Icons.info_outline,
+                                                        size: 12,
+                                                        color: Colors
+                                                            .blue.shade700,
+                                                      ),
+                                                      const SizedBox(width: 4),
+                                                      Text(
+                                                        'Available Databases:',
+                                                        style: theme
+                                                            .textTheme.bodySmall
+                                                            ?.copyWith(
+                                                          color: Colors
+                                                              .blue.shade700,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          fontSize: 10,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 6),
+                                                  Wrap(
+                                                    spacing: 6,
+                                                    runSpacing: 6,
+                                                    children:
+                                                        _databases.map((db) {
+                                                      final isSelected = db ==
+                                                          _selectedDatabase;
+                                                      return GestureDetector(
+                                                        onTap: () {
+                                                          setState(() {
+                                                            _selectedDatabase =
+                                                                db;
+                                                          });
+                                                        },
+                                                        child: Container(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                            horizontal: 10,
+                                                            vertical: 6,
+                                                          ),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: isSelected
+                                                                ? Colors.blue
+                                                                    .shade700
+                                                                : Colors.white,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        6),
+                                                            border: Border.all(
+                                                              color: isSelected
+                                                                  ? Colors.blue
+                                                                      .shade700
+                                                                  : Colors.blue
+                                                                      .shade300,
+                                                              width: 1.5,
+                                                            ),
+                                                          ),
+                                                          child: Row(
+                                                            mainAxisSize:
+                                                                MainAxisSize
+                                                                    .min,
+                                                            children: [
+                                                              if (isSelected)
+                                                                Icon(
+                                                                  Icons
+                                                                      .check_circle,
+                                                                  size: 12,
+                                                                  color: Colors
+                                                                      .white,
+                                                                ),
+                                                              if (isSelected)
+                                                                const SizedBox(
+                                                                    width: 4),
+                                                              Text(
+                                                                db,
+                                                                style: theme
+                                                                    .textTheme
+                                                                    .bodySmall
+                                                                    ?.copyWith(
+                                                                  color: isSelected
+                                                                      ? Colors
+                                                                          .white
+                                                                      : Colors
+                                                                          .blue
+                                                                          .shade700,
+                                                                  fontSize: 11,
+                                                                  fontWeight: isSelected
+                                                                      ? FontWeight
+                                                                          .bold
+                                                                      : FontWeight
+                                                                          .w500,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      );
+                                                    }).toList(),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ],
                                       ),
                                       const SizedBox(height: 12),
 
@@ -515,12 +686,10 @@ class _SigninScreenState extends State<SigninScreen>
                                           borderRadius: BorderRadius.circular(
                                             12,
                                           ),
-                                          onTap:
-                                              () => setState(
-                                                () =>
-                                                    _isPasswordVisible =
-                                                        !_isPasswordVisible,
-                                              ),
+                                          onTap: () => setState(
+                                            () => _isPasswordVisible =
+                                                !_isPasswordVisible,
+                                          ),
                                           child: Icon(
                                             _isPasswordVisible
                                                 ? Icons.visibility_outlined
@@ -575,9 +744,9 @@ class _SigninScreenState extends State<SigninScreen>
                                             style: TextButton.styleFrom(
                                               padding:
                                                   const EdgeInsets.symmetric(
-                                                    vertical: 2,
-                                                    horizontal: 6,
-                                                  ),
+                                                vertical: 2,
+                                                horizontal: 6,
+                                              ),
                                               minimumSize: Size.zero,
                                               tapTargetSize:
                                                   MaterialTapTargetSize
@@ -604,22 +773,18 @@ class _SigninScreenState extends State<SigninScreen>
                                                         .settingsLoading
                                                         .value ||
                                                     _authController
-                                                        .timesheetLoading
-                                                        .value
+                                                        .timesheetLoading.value
                                                 ? null
                                                 : _handleSignIn,
                                         text: () {
                                           if (_authController
-                                              .authLoading
-                                              .value) {
+                                              .authLoading.value) {
                                             return 'SIGNING IN...';
                                           } else if (_authController
-                                              .settingsLoading
-                                              .value) {
+                                              .settingsLoading.value) {
                                             return 'LOADING SETTINGS...';
                                           } else if (_authController
-                                              .timesheetLoading
-                                              .value) {
+                                              .timesheetLoading.value) {
                                             return 'LOADING TIMESHEETS...';
                                           } else {
                                             return 'SIGN IN';
@@ -627,14 +792,11 @@ class _SigninScreenState extends State<SigninScreen>
                                         }(),
                                         icon: () {
                                           if (_authController
-                                                  .authLoading
-                                                  .value ||
+                                                  .authLoading.value ||
                                               _authController
-                                                  .settingsLoading
-                                                  .value ||
+                                                  .settingsLoading.value ||
                                               _authController
-                                                  .timesheetLoading
-                                                  .value) {
+                                                  .timesheetLoading.value) {
                                             return Icons.hourglass_empty;
                                           } else {
                                             return Icons.login;
@@ -648,8 +810,7 @@ class _SigninScreenState extends State<SigninScreen>
                                         CompactButton(
                                           onPressed:
                                               _authController
-                                                          .authLoading
-                                                          .value ||
+                                                          .authLoading.value ||
                                                       _authController
                                                           .settingsLoading
                                                           .value ||
@@ -660,16 +821,13 @@ class _SigninScreenState extends State<SigninScreen>
                                                   : _handleDebugSignIn,
                                           text: () {
                                             if (_authController
-                                                .authLoading
-                                                .value) {
+                                                .authLoading.value) {
                                               return 'SIGNING IN...';
                                             } else if (_authController
-                                                .settingsLoading
-                                                .value) {
+                                                .settingsLoading.value) {
                                               return 'LOADING SETTINGS...';
                                             } else if (_authController
-                                                .timesheetLoading
-                                                .value) {
+                                                .timesheetLoading.value) {
                                               return 'LOADING TIMESHEETS...';
                                             } else {
                                               return 'DEBUG SIGN IN';
@@ -677,14 +835,11 @@ class _SigninScreenState extends State<SigninScreen>
                                           }(),
                                           icon: () {
                                             if (_authController
-                                                    .authLoading
-                                                    .value ||
+                                                    .authLoading.value ||
                                                 _authController
-                                                    .settingsLoading
-                                                    .value ||
+                                                    .settingsLoading.value ||
                                                 _authController
-                                                    .timesheetLoading
-                                                    .value) {
+                                                    .timesheetLoading.value) {
                                               return Icons.hourglass_empty;
                                             } else {
                                               return Icons.bug_report;
@@ -745,10 +900,10 @@ class _SigninScreenState extends State<SigninScreen>
                               ),
                               child: Text(
                                 'Sign Up',
-                                style: TextStyle(
-                                  fontSize: 10,
+                                style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 11,
                                   fontWeight: FontWeight.bold,
-                                  color: theme.primaryColor,
+                                  color: AppTheme.primary,
                                 ),
                               ),
                             ),

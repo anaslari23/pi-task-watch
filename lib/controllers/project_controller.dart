@@ -8,11 +8,12 @@ class ProjectController extends GetxController {
   Future<List<ProjectModel>> getAllProject() async {
     try {
       isLoading.value = true;
+
       final apiResponse = await ApiManager.getRequest(endPoint: "projects");
-      final projectList =
-          (apiResponse.body['data'] as List)
-              .map((e) => ProjectModel.fromJson(e))
-              .toList();
+
+      final projectList = (apiResponse.body['data'] as List)
+          .map((e) => ProjectModel.fromJson(e))
+          .toList();
       _projectList.value = projectList;
       return projectList;
     } catch (e) {

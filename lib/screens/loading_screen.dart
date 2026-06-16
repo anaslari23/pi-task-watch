@@ -1,4 +1,4 @@
-import '../exports.dart';
+import 'package:pi_task_watch/exports.dart';
 
 class LoadingScreen extends StatefulWidget {
   static const String routeName = '/loading';

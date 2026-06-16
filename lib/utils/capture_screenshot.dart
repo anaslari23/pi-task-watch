@@ -3,6 +3,10 @@ import 'package:pi_task_watch/rust/api/take_full_screenshot.dart';
 import 'package:pi_task_watch/utils/compress_image.dart';
 
 Future<String> captureScreenshot() async {
+  if (GetPlatform.isAndroid || GetPlatform.isIOS) {
+    print('🔵 Skipping screenshot on mobile platform');
+    return '';
+  }
   //
   print('🔵 Starting screenshot capture process...');
 
@@ -12,23 +16,19 @@ Future<String> captureScreenshot() async {
   print('🔵 Platform check: isWindows = ${GetPlatform.isWindows}');
 
   if (GetPlatform.isWindows) {
-    print('🔵 Using Windows optimized screenshot method...');
+    print('🔵 Using Windows full fallback screenshot chain...');
     try {
-      // Use the Rust backend which has multiple Windows-specific methods:
-      // 1. Screenshots crate (primary)
-      // 2. NirCmd (silent, Windows native)
-      // 3. PowerShell with hidden window (fallback)
-      print('🔵 Attempting Rust-based Windows screenshot...');
-      rawImage =
-          GetPlatform.isWindows
-              ? await takeScreenshotWindowsNircmd()
-              : await takeFullScreenshot();
+      // Use the Rust backend's full Windows fallback chain instead of relying
+      // only on NirCmd, which may be blocked by Defender/SmartScreen.
+      print('🔵 Attempting Rust-based Windows screenshot fallbacks...');
+      rawImage = await takeFullScreenshot();
       print('✅ Windows screenshot captured successfully');
     } catch (e) {
       print('❌ Windows screenshot failed: $e');
-      // This should rarely happen as the Rust implementation has multiple fallbacks
+      // This should rarely happen as the Rust implementation has multiple
+      // fallbacks, but bubble the error so the tracker can log and continue.
       print('🔄 All Windows methods exhausted, screenshot failed');
-      rethrow; // Don't suppress the error, let it bubble up
+      rethrow;
     }
   } else {
     print('🔵 Using cross-platform screenshot method...');

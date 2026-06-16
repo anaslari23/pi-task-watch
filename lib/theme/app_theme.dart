@@ -1,305 +1,192 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Primary Theme Colors
-  static const Color primaryLight = Color(0xFFE91E63); // Pink
-  static const Color primaryDark = Color(0xFFC2185B); // Dark Pink
-  static const Color accentColor = Color(0xFFFF4081); // Pink Accent
+  // Primary Theme Colors - ChromePulse Utility Design System
+  static const Color primary = Color(0xFFB80049); // Magenta
+  static const Color onPrimary = Colors.white;
+  static const Color primaryContainer = Color(0xFFE2165F);
+
+  static const Color secondary = Color(0xFF006D37); // Emerald
+  static const Color secondaryContainer = Color(0xFF6BFE9C);
+
+  static const Color tertiary = Color(0xFF835100); // Amber
+  static const Color tertiaryContainer = Color(0xFFA46700);
+
+  static const Color error = Color(0xFFBA1A1A);
+  static const Color background = Color(0xFFFFF8F8);
+  static const Color surface = Color(0xFFFFF8F8);
+  static const Color surfaceContainer = Color(0xFFFFE8F0);
+  static const Color surfaceContainerHigh = Color(0xFFFAE2EA);
+
+  // Editorial Gradient for Backgrounds
+  static const LinearGradient editorialGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      Color(0xFFFFF8F8), // Soft pink start
+      Color(0xFFFFE8F0), // Medium pink end
+    ],
+  );
 
   // Status Colors
-  static const _active = Color(0xFF2ECC71);
-  static const _paused = Color(0xFFF39C12);
-  static const _error = Color(0xFFE74C3C);
+  static const Color _active = secondary;
+  static const Color _paused = tertiary;
+  static const Color _error = error;
 
-  // Tracker States
+  // Tracker State Colors
   static TrackerStateColors active = TrackerStateColors(
     primary: _active,
     gradient: const LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: [Color(0xFF2ECC71), Color(0xFF27AE60)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [secondary, Color(0xFF005228)],
     ),
     text: Colors.white,
-    border: _active.withOpacity(0.3),
-    shadow: _active.withOpacity(0.2),
-    background: _active.withOpacity(0.1),
+    border: secondary.withOpacity(0.2),
+    shadow: secondary.withOpacity(0.1),
+    background: secondary.withOpacity(0.05),
   );
 
   static TrackerStateColors paused = TrackerStateColors(
     primary: _paused,
     gradient: const LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: [Color(0xFFF39C12), Color(0xFFD35400)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [tertiary, Color(0xFF663E00)],
     ),
     text: Colors.white,
-    border: _paused.withOpacity(0.3),
-    shadow: _paused.withOpacity(0.2),
-    background: _paused.withOpacity(0.1),
+    border: tertiary.withOpacity(0.2),
+    shadow: tertiary.withOpacity(0.1),
+    background: tertiary.withOpacity(0.05),
   );
 
-  static TrackerStateColors error = TrackerStateColors(
+  static TrackerStateColors errorState = TrackerStateColors(
     primary: _error,
     gradient: const LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: [Color(0xFFE74C3C), Color(0xFFC0392B)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [error, Color(0xFF93000A)],
     ),
     text: Colors.white,
-    border: _error.withOpacity(0.3),
-    shadow: _error.withOpacity(0.2),
-    background: _error.withOpacity(0.1),
+    border: error.withOpacity(0.2),
+    shadow: error.withOpacity(0.1),
+    background: error.withOpacity(0.05),
   );
 
-  // Stats Card Theme
-  static List<StatsCardTheme> statsCards = [
-    StatsCardTheme(
-      color: const Color(0xFF3498DB),
-      icon: Icons.task_alt,
-      gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFF3498DB), Color(0xFF2980B9)],
-      ),
-    ),
-    StatsCardTheme(
-      color: const Color(0xFF2ECC71),
-      icon: Icons.timer,
-      gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFF2ECC71), Color(0xFF27AE60)],
-      ),
-    ),
-    StatsCardTheme(
-      color: const Color(0xFFF1C40F),
-      icon: Icons.psychology,
-      gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFFF1C40F), Color(0xFFF39C12)],
-      ),
-    ),
-  ];
-
-  // Card Decorations
-  static BoxDecoration cardDecoration({
-    required TrackerStateColors state,
-    double borderRadius = 12,
+  // Glassmorphism Card Style
+  static BoxDecoration glassDecoration({
+    double borderRadius = 24,
     bool elevated = true,
+    Color? color,
   }) {
     return BoxDecoration(
-      color: Colors.white,
+      color: (color ?? Colors.white).withOpacity(0.8),
       borderRadius: BorderRadius.circular(borderRadius),
-      border: Border.all(color: state.border, width: 1),
-      boxShadow:
-          elevated
-              ? [
-                BoxShadow(
-                  color: state.shadow,
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
-                ),
-              ]
-              : null,
+      border: Border.all(color: Colors.white.withOpacity(0.5), width: 1),
+      boxShadow: elevated
+          ? [
+              BoxShadow(
+                color: const Color(0xFF25181E).withOpacity(0.04),
+                blurRadius: 24,
+                spreadRadius: 0,
+                offset: const Offset(0, 8),
+              ),
+            ]
+          : null,
     );
   }
 
-  // Button Styles
-  static ButtonStyle primaryButton({
-    Color? backgroundColor,
-    double borderRadius = 30,
-  }) {
-    return ElevatedButton.styleFrom(
-      backgroundColor: backgroundColor ?? primaryLight,
-      foregroundColor: Colors.white,
-      elevation: 2,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(borderRadius),
-      ),
-    );
-  }
-
-  static ButtonStyle secondaryButton({double borderRadius = 30}) {
-    return TextButton.styleFrom(
-      foregroundColor: Colors.grey.shade700,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(borderRadius),
-      ),
-    );
-  }
-
-  // Text Styles
-  static TextStyle get headingStyle => const TextStyle(
-    fontSize: 18,
-    fontWeight: FontWeight.w600,
-    color: Colors.white,
-  );
-
-  static TextStyle get subheadingStyle => const TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.w500,
-    color: Colors.white70,
-  );
-
-  static TextStyle get labelStyle =>
-      const TextStyle(fontSize: 12, fontWeight: FontWeight.w500);
-
-  static ThemeData compactTheme(BuildContext context, {Color? primaryColor}) {
-    final Color primary = primaryColor ?? Colors.pink;
-
+  static ThemeData compactTheme(BuildContext context) {
     return ThemeData(
-      primaryColor: primary,
-      primarySwatch: _getMaterialColorFromColor(primary),
-      useMaterial3: false,
-
-      // Typography - Reduced sizes for compact UI
-      textTheme: const TextTheme(
-        displayLarge: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        displayMedium: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        displaySmall: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        headlineMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-        headlineSmall: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-        titleLarge: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-        titleMedium: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-        titleSmall: TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
-        bodyLarge: TextStyle(fontSize: 12),
-        bodyMedium: TextStyle(fontSize: 11),
-        bodySmall: TextStyle(fontSize: 10),
-        labelLarge: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-        labelMedium: TextStyle(fontSize: 10),
-        labelSmall: TextStyle(fontSize: 9),
+      useMaterial3: true,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: primary,
+        primary: primary,
+        onPrimary: onPrimary,
+        secondary: secondary,
+        onSecondary: Colors.white,
+        tertiary: tertiary,
+        error: error,
+        surface: surface,
+        background: background,
       ),
 
-      // Input Decorations
+      // Typography - Space Grotesk for Headlines, Inter for Body
+      textTheme:
+          GoogleFonts.interTextTheme(Theme.of(context).textTheme).copyWith(
+        displayLarge: GoogleFonts.spaceGrotesk(
+            fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: -0.5),
+        displayMedium: GoogleFonts.spaceGrotesk(
+            fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: -0.5),
+        displaySmall:
+            GoogleFonts.spaceGrotesk(fontSize: 16, fontWeight: FontWeight.bold),
+        headlineMedium:
+            GoogleFonts.spaceGrotesk(fontSize: 14, fontWeight: FontWeight.bold),
+        titleLarge:
+            GoogleFonts.spaceGrotesk(fontSize: 14, fontWeight: FontWeight.bold),
+        bodyLarge: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w400),
+        bodyMedium:
+            GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w400),
+        labelLarge: GoogleFonts.inter(
+            fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+      ),
+
+      // Input Decoration
       inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: surfaceContainer,
         isDense: true,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ), // Increased
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(
-            10,
-          ), // Slightly increased roundness
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(
-            10,
-          ), // Slightly increased roundness
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(
-            10,
-          ), // Slightly increased roundness
-          borderSide: BorderSide(color: primary),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: primary, width: 1.5),
         ),
+        labelStyle: TextStyle(fontSize: 11, color: primary.withOpacity(0.7)),
         hintStyle: TextStyle(fontSize: 11, color: Colors.grey.shade500),
-        labelStyle: const TextStyle(fontSize: 11),
-        prefixIconConstraints: const BoxConstraints(
-          minWidth: 30,
-          minHeight: 30,
-        ),
-        suffixIconConstraints: const BoxConstraints(
-          minWidth: 30,
-          minHeight: 30,
-        ),
       ),
 
-      // Buttons
+      // Buttons - Rounded Full (Capsule)
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
-          ), // Increased
-          textStyle: const TextStyle(fontSize: 15), // Increased
-          minimumSize: const Size(0, 32),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ), // Increased roundness
-          elevation: 1,
+          backgroundColor: primary,
+          foregroundColor: onPrimary,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          textStyle:
+              GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold),
+          shape: const StadiumBorder(),
+          elevation: 2,
         ),
-      ),
-
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
-          textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-          minimumSize: const Size(0, 32),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-        ),
-      ),
-
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          textStyle: const TextStyle(fontSize: 11),
-          minimumSize: const Size(0, 24),
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
-      ),
-
-      // Dialogs and Cards
-      dialogTheme: DialogThemeData(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-        titleTextStyle: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-        ),
-        contentTextStyle: const TextStyle(fontSize: 11),
-      ),
-
-      cardTheme: CardThemeData(
-        elevation: 1,
-        margin: const EdgeInsets.symmetric(vertical: 4),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
       ),
 
       // App Bar
       appBarTheme: AppBarTheme(
+        backgroundColor: background,
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: TextStyle(
-          color: Colors.white,
-          fontSize: 14,
+        titleTextStyle: GoogleFonts.spaceGrotesk(
+          color: primary,
+          fontSize: 16,
           fontWeight: FontWeight.bold,
         ),
-        toolbarHeight: 48,
+        iconTheme: const IconThemeData(color: primary, size: 20),
       ),
 
-      // Icons - Fixed implementation
-      iconTheme: IconThemeData(size: 16, color: Colors.grey.shade700),
-
-      // Visual Density for compact layouts
-      visualDensity: VisualDensity.compact,
+      cardTheme: CardThemeData(
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        color: Colors.white,
+      ),
     );
-  }
-
-  // Helper method to convert Color to MaterialColor
-  static MaterialColor _getMaterialColorFromColor(Color color) {
-    final int red = color.red;
-    final int green = color.green;
-    final int blue = color.blue;
-
-    final Map<int, Color> shades = {
-      50: Color.fromRGBO(red, green, blue, .1),
-      100: Color.fromRGBO(red, green, blue, .2),
-      200: Color.fromRGBO(red, green, blue, .3),
-      300: Color.fromRGBO(red, green, blue, .4),
-      400: Color.fromRGBO(red, green, blue, .5),
-      500: Color.fromRGBO(red, green, blue, .6),
-      600: Color.fromRGBO(red, green, blue, .7),
-      700: Color.fromRGBO(red, green, blue, .8),
-      800: Color.fromRGBO(red, green, blue, .9),
-      900: Color.fromRGBO(red, green, blue, 1),
-    };
-
-    return MaterialColor(color.value, shades);
   }
 }
 

@@ -1,5 +1,6 @@
 use anyhow::{anyhow, Result};
 use std::process::Command;
+#[cfg(any(target_os = "windows", target_os = "macos", target_os = "linux"))]
 use notify_rust::Notification;
 
 /// Sends a desktop notification with the specified title and message.
@@ -35,14 +36,17 @@ use notify_rust::Notification;
 /// ```
 #[flutter_rust_bridge::frb]
 pub fn send_notification(title: String, message: String, icon_path: Option<String>) -> Result<()> {
-    if Notification::new()
-        .summary(&title)
-        .body(&message)
-        .icon(icon_path.as_deref().unwrap_or(""))
-        .show()
-        .is_ok()
+    #[cfg(any(target_os = "windows", target_os = "macos", target_os = "linux"))]
     {
-        return Ok(())
+        if Notification::new()
+            .summary(&title)
+            .body(&message)
+            .icon(icon_path.as_deref().unwrap_or(""))
+            .show()
+            .is_ok()
+        {
+            return Ok(())
+        }
     }
     fallback_send_notification(title, message, icon_path)
 }

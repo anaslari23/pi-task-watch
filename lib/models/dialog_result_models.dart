@@ -1,6 +1,6 @@
 import 'package:pi_task_watch/models/timesheet_model.dart';
 
-import '../exports.dart';
+import 'package:pi_task_watch/exports.dart';
 
 /// Represents the result returned when starting a work session
 class StartWorkResult {

@@ -1,4 +1,5 @@
-use x_win::{get_active_window, get_open_windows, XWinError, WindowInfo, get_window_icon};
+#[cfg(any(target_os = "windows", target_os = "macos", target_os = "linux"))]
+use x_win::{get_active_window, get_open_windows, WindowInfo, get_window_icon};
 use flutter_rust_bridge::frb;
 use crate::frb_generated::StreamSink;
 use std::sync::{Arc, Mutex};
@@ -25,6 +26,7 @@ pub struct WindowDetails {
     pub os: String,  // Add OS field to help with platform-specific handling
 }
 
+#[cfg(any(target_os = "windows", target_os = "macos", target_os = "linux"))]
 fn convert_window_info(window: &WindowInfo) -> WindowDetails {
     WindowDetails {
         id: window.id,
@@ -45,52 +47,73 @@ fn convert_window_info(window: &WindowInfo) -> WindowDetails {
 
 #[frb(sync)]
 pub fn get_active_window_info() -> Result<WindowDetails, String> {
-    match get_active_window() {
-        Ok(window) => Ok(convert_window_info(&window)),
-        Err(XWinError) => Err("Error occurred while getting active window".to_string()),
+    #[cfg(any(target_os = "windows", target_os = "macos", target_os = "linux"))]
+    {
+        match get_active_window() {
+            Ok(window) => Ok(convert_window_info(&window)),
+            Err(_) => Err("Error occurred while getting active window".to_string()),
+        }
+    }
+    #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
+    {
+        Err("Active window tracking is not supported on this platform".to_string())
     }
 }
 
 #[frb(sync)]
 pub fn get_open_windows_info() -> Result<Vec<WindowDetails>, String> {
-    match get_open_windows() {
-        Ok(windows) => {
-            let details: Vec<WindowDetails> = windows.iter()
-                .map(|window| convert_window_info(window))
-                .collect();
-            Ok(details)
-        },
-        Err(XWinError) => Err("Error occurred while getting open windows".to_string()),
+    #[cfg(any(target_os = "windows", target_os = "macos", target_os = "linux"))]
+    {
+        match get_open_windows() {
+            Ok(windows) => {
+                let details: Vec<WindowDetails> = windows.iter()
+                    .map(|window| convert_window_info(window))
+                    .collect();
+                Ok(details)
+            },
+            Err(_) => Err("Error occurred while getting open windows".to_string()),
+        }
+    }
+    #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
+    {
+        Err("Open windows tracking is not supported on this platform".to_string())
     }
 }
 
 #[frb(sync)]
 pub fn get_window_icon_data(window_id: u32) -> Result<String, String> {  // Changed from i32 to u32
-    match get_active_window() {
-        Ok(active_window) => {
-            if active_window.id == window_id {
-                return match get_window_icon(&active_window) {
-                    Ok(icon_info) => Ok(icon_info.data),
-                    Err(XWinError) => Err("Error occurred while getting window icon".to_string()),
-                };
-            }
-            
-            match get_open_windows() {
-                Ok(windows) => {
-                    for window in windows {
-                        if window.id == window_id {
-                            return match get_window_icon(&window) {
-                                Ok(icon_info) => Ok(icon_info.data),
-                                Err(XWinError) => Err("Error getting window icon".to_string()),
-                            };
+    #[cfg(any(target_os = "windows", target_os = "macos", target_os = "linux"))]
+    {
+        match get_active_window() {
+            Ok(active_window) => {
+                if active_window.id == window_id {
+                    return match get_window_icon(&active_window) {
+                        Ok(icon_info) => Ok(icon_info.data),
+                        Err(_) => Err("Error occurred while getting window icon".to_string()),
+                    };
+                }
+                
+                match get_open_windows() {
+                    Ok(windows) => {
+                        for window in windows {
+                            if window.id == window_id {
+                                return match get_window_icon(&window) {
+                                    Ok(icon_info) => Ok(icon_info.data),
+                                    Err(_) => Err("Error getting window icon".to_string()),
+                                };
+                            }
                         }
-                    }
-                    Err("Window not found".to_string())
-                },
-                Err(XWinError) => Err("Error occurred while getting open windows".to_string()),
-            }
-        },
-        Err(XWinError) => Err("Error occurred while getting active window".to_string()),
+                        Err("Window not found".to_string())
+                    },
+                    Err(_) => Err("Error occurred while getting open windows".to_string()),
+                }
+            },
+            Err(_) => Err("Error occurred while getting active window".to_string()),
+        }
+    }
+    #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
+    {
+        Err("Window icon extraction is not supported on this platform".to_string())
     }
 }
 
@@ -109,6 +132,10 @@ pub fn get_current_platform() -> String {
         "macos".to_string()
     } else if cfg!(target_os = "linux") {
         "linux".to_string()
+    } else if cfg!(target_os = "android") {
+        "android".to_string()
+    } else if cfg!(target_os = "ios") {
+        "ios".to_string()
     } else {
         "unknown".to_string()
     }
@@ -126,32 +153,41 @@ pub fn start_window_listener_stream(sink: StreamSink<WindowDetails>) -> u64 {
     WINDOW_LISTENERS.lock().unwrap().insert(listener_id, running);
     
     thread::spawn(move || {
-        let mut last_window_id: u32 = 0;
-        
-        // Use a different polling frequency based on platform
-        let polling_interval = if cfg!(target_os = "windows") {
-            Duration::from_millis(300) // Windows is generally faster
-        } else if cfg!(target_os = "macos") {
-            Duration::from_millis(500) // Default for macOS
-        } else {
-            Duration::from_millis(700) // Slower for Linux and others to reduce overhead
-        };
-        
-        while *running_clone.lock().unwrap() {
-            match get_active_window() {
-                Ok(window) => {
-                    if window.id != last_window_id {
-                        let window_details = convert_window_info(&window);
-                        last_window_id = window.id;
-                        sink.add(window_details);
+        #[cfg(any(target_os = "windows", target_os = "macos", target_os = "linux"))]
+        {
+            let mut last_window_id: u32 = 0;
+            
+            // Use a different polling frequency based on platform
+            let polling_interval = if cfg!(target_os = "windows") {
+                Duration::from_millis(300) // Windows is generally faster
+            } else if cfg!(target_os = "macos") {
+                Duration::from_millis(500) // Default for macOS
+            } else {
+                Duration::from_millis(700) // Slower for Linux and others to reduce overhead
+            };
+            
+            while *running_clone.lock().unwrap() {
+                match get_active_window() {
+                    Ok(window) => {
+                        if window.id != last_window_id {
+                            let window_details = convert_window_info(&window);
+                            last_window_id = window.id;
+                            let _ = sink.add(window_details);
+                        }
+                    },
+                    Err(_) => {
+                        // Continue on error, just wait for next check
                     }
-                },
-                Err(_) => {
-                    // Continue on error, just wait for next check
-                    // If errors persist on specific platforms, we could add platform-specific error handling here
                 }
+                thread::sleep(polling_interval);
             }
-            thread::sleep(polling_interval);
+        }
+        #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
+        {
+            // Just sleep on unsupported platforms to prevent CPU spin
+            while *running_clone.lock().unwrap() {
+                thread::sleep(Duration::from_secs(1));
+            }
         }
     });
     

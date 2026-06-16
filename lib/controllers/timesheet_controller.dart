@@ -1,7 +1,10 @@
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:pi_task_watch/exports.dart';
 import 'package:pi_task_watch/models/idle_time_data.dart';
 import 'package:pi_task_watch/models/timesheet_model.dart';
+import 'package:pi_task_watch/utils/log_utils.dart'; // Added
 
 class TimesheetController extends GetxController {
   RxList<TimesheetModel> timesheetList = <TimesheetModel>[].obs;
@@ -42,13 +45,25 @@ class TimesheetController extends GetxController {
 
   //
   Future<bool> updateSyncIdle({required IdleTimeData idleData}) async {
-    //
-    final apiResponse = await ApiManager.postRequest(
-      endPoint: "taskwatch_idle",
-      data: idleData.toJson(),
-    );
-    return apiResponse.isSuccess;
-    //
+    try {
+      LogUtils.i('📤 [IDLE SYNC] Sending idle time data to API:');
+      LogUtils.i('📤 [IDLE SYNC] Full JSON: ${jsonEncode(idleData.toJson())}');
+      LogUtils.i('📤 [IDLE SYNC] Note field: "${idleData.note}"');
+      LogUtils.i('📤 [IDLE SYNC] Idle type: ${idleData.idleType}');
+      
+      final response = await ApiManager.postRequest(
+        endPoint: "taskwatch_idle",
+        data: idleData.toJson(),
+      );
+      
+      LogUtils.i('📥 [IDLE SYNC] API Response: ${response.isSuccess}');
+      LogUtils.i('📥 [IDLE SYNC] Response body: ${jsonEncode(response.body)}');
+      
+      return response.isSuccess;
+    } catch (e) {
+      LogUtils.e('❌ [IDLE SYNC] Error sending idle time data', e);
+      return false;
+    }
   }
 
   //

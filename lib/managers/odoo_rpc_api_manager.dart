@@ -4,7 +4,8 @@ import 'package:dio/dio.dart' as dio;
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
 
-import '../utils/get_secure_http_dio_client.dart';
+import 'package:pi_task_watch/utils/get_secure_http_dio_client.dart';
+import 'package:pi_task_watch/constants/app_constants.dart';
 
 class OdooException implements Exception {
   final String message;
@@ -259,14 +260,12 @@ class OdooUserInfo {
       groupsId: (data['groups_id'] as List?)?.cast<int>() ?? [],
       lang: data['lang']?.toString(),
       tz: data['tz']?.toString(),
-      createDate:
-          data['create_date'] != null
-              ? DateTime.tryParse(data['create_date'].toString())
-              : null,
-      writeDate:
-          data['write_date'] != null
-              ? DateTime.tryParse(data['write_date'].toString())
-              : null,
+      createDate: data['create_date'] != null
+          ? DateTime.tryParse(data['create_date'].toString())
+          : null,
+      writeDate: data['write_date'] != null
+          ? DateTime.tryParse(data['write_date'].toString())
+          : null,
       sessionId: sessionId,
     );
   }
@@ -426,7 +425,14 @@ class OdooRpcApiManager {
   static int? _uid;
   static String? _sessionId;
   static DateTime? _lastAuthTime;
-  static bool useFullUrl = true;
+  static bool useFullUrl = false;
+
+  static String get _effectiveServerUrl {
+    if (_serverUrl != null && _serverUrl!.isNotEmpty) {
+      return _serverUrl!;
+    }
+    return AppConstant.apiServerUrl;
+  }
 
   static Future<dio.Dio> _getDio() async {
     if (_dio == null) {
@@ -468,10 +474,9 @@ class OdooRpcApiManager {
     String? password,
     OdooAuthMode authMode = OdooAuthMode.session,
   }) {
-    _serverUrl =
-        serverUrl.endsWith('/')
-            ? serverUrl.substring(0, serverUrl.length - 1)
-            : serverUrl;
+    _serverUrl = serverUrl.endsWith('/')
+        ? serverUrl.substring(0, serverUrl.length - 1)
+        : serverUrl;
     _database = database;
     _username = username;
     _password = password;
@@ -490,10 +495,12 @@ class OdooRpcApiManager {
     final headers = <String, String>{
       'Content-Type': 'application/json',
       'Accept': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
     };
 
     if (includeSession && _sessionId != null && _sessionId!.isNotEmpty) {
-      headers['Cookie'] = 'session_id=$_sessionId';
+      // Some Odoo versions expect 'session' while others expect 'session_id'
+      headers['Cookie'] = 'session=$_sessionId; session_id=$_sessionId';
     }
 
     return headers;
@@ -639,10 +646,9 @@ class OdooRpcApiManager {
         );
       }
 
-      final normalizedUrl =
-          serverUrl.endsWith('/')
-              ? serverUrl.substring(0, serverUrl.length - 1)
-              : serverUrl;
+      final normalizedUrl = serverUrl.endsWith('/')
+          ? serverUrl.substring(0, serverUrl.length - 1)
+          : serverUrl;
 
       if (showLog) {
         _logger.i(
@@ -721,12 +727,12 @@ class OdooRpcApiManager {
     bool showLog = _defaultShowLog,
   }) async {
     try {
-      final url = serverUrl ?? _serverUrl;
+      final url = serverUrl ?? _effectiveServerUrl;
       final db = database ?? _database;
       final user = username ?? _username;
       final pass = password ?? _password;
 
-      if (url == null || url.isEmpty) {
+      if (url.isEmpty) {
         return OdooResponse<OdooUserInfo>.error(
           message: 'Server URL is required',
           requestId: const Uuid().v4(),
@@ -844,7 +850,8 @@ class OdooRpcApiManager {
   }) async {
     try {
       final dioInstance = await _getDio();
-      final uri = Uri.parse('$_serverUrl$_webSessionEndpoint');
+      final baseUrl = _effectiveServerUrl;
+      final uri = Uri.parse('$baseUrl$_webSessionEndpoint');
 
       final requestData = {
         'jsonrpc': '2.0',
@@ -1005,10 +1012,9 @@ class OdooRpcApiManager {
   }) {
     _sessionId = sessionId;
     _uid = uid;
-    _serverUrl =
-        serverUrl.endsWith('/')
-            ? serverUrl.substring(0, serverUrl.length - 1)
-            : serverUrl;
+    _serverUrl = serverUrl.endsWith('/')
+        ? serverUrl.substring(0, serverUrl.length - 1)
+        : serverUrl;
     _database = database;
     _username = username;
     _password = password;
@@ -1037,17 +1043,17 @@ class OdooRpcApiManager {
   static bool get isUsingFullUrl => useFullUrl;
 
   static Map<String, dynamic> get authenticationState => {
-    'isAuthenticated': isAuthenticated,
-    'uid': _uid,
-    'sessionId':
-        _sessionId != null ? '${_sessionId!.substring(0, 8)}...' : null,
-    'database': _database,
-    'username': _username,
-    'serverUrl': _serverUrl,
-    'authMode': _authMode.name,
-    'useFullUrl': useFullUrl,
-    'lastAuthTime': _lastAuthTime?.toIso8601String(),
-  };
+        'isAuthenticated': isAuthenticated,
+        'uid': _uid,
+        'sessionId':
+            _sessionId != null ? '${_sessionId!.substring(0, 8)}...' : null,
+        'database': _database,
+        'username': _username,
+        'serverUrl': _effectiveServerUrl,
+        'authMode': _authMode.name,
+        'useFullUrl': useFullUrl,
+        'lastAuthTime': _lastAuthTime?.toIso8601String(),
+      };
 
   static Future<bool> validateSession({bool showLog = false}) async {
     if (!isAuthenticated) return false;
@@ -1141,7 +1147,8 @@ class OdooRpcApiManager {
       ];
 
       final requestId = const Uuid().v4();
-      final endpoint = '$_serverUrl$_xmlRpcObjectEndpoint';
+      final baseUrl = _effectiveServerUrl;
+      final endpoint = '$baseUrl$_xmlRpcObjectEndpoint';
 
       if (showLog) {
         _logger.d(
@@ -1256,12 +1263,19 @@ class OdooRpcApiManager {
       };
 
       final dioInstance = await _getDio();
+      final baseUrl = _effectiveServerUrl;
       String endpoint;
-
       if (useFullUrl) {
-        endpoint = '$_serverUrl$_webDatasetCallKwEndpoint/$model/$method';
+        endpoint = '$baseUrl$_webDatasetCallKwEndpoint/$model/$method';
       } else {
-        endpoint = '$_serverUrl$_webDatasetCallKwEndpoint';
+        endpoint = '$baseUrl$_webDatasetCallKwEndpoint';
+      }
+
+      // Ensure no double slashes after schema (http://)
+      if (endpoint.contains('://')) {
+        final schemaPart = endpoint.split('://')[0];
+        final pathPart = endpoint.split('://')[1].replaceAll('//', '/');
+        endpoint = '$schemaPart://$pathPart';
       }
 
       if (showLog) {
@@ -1283,8 +1297,7 @@ class OdooRpcApiManager {
             final error = responseData['error'];
             String errorMessage;
             if (error is Map<String, dynamic>) {
-              errorMessage =
-                  error['message']?.toString() ??
+              errorMessage = error['message']?.toString() ??
                   error['data']?['message']?.toString() ??
                   'Unknown error';
             } else {
@@ -1328,7 +1341,8 @@ class OdooRpcApiManager {
     bool includeSession = true,
     bool showLog = _defaultShowLog,
   }) async {
-    if (_serverUrl == null || _serverUrl!.isEmpty) {
+    final baseUrl = _effectiveServerUrl;
+    if (baseUrl.isEmpty) {
       return OdooResponse<dynamic>.error(
         message: 'Server URL not configured',
         requestId: const Uuid().v4(),
@@ -1336,7 +1350,7 @@ class OdooRpcApiManager {
     }
 
     final requestId = const Uuid().v4();
-    final uri = Uri.parse('$_serverUrl$endpoint');
+    final uri = Uri.parse('$baseUrl$endpoint');
 
     final requestData = <String, dynamic>{
       'jsonrpc': '2.0',
@@ -1832,12 +1846,13 @@ class OdooRpcApiManager {
   }
 
   static String? getUserImageUrl({int? userId, String field = 'image_1920'}) {
-    if (_serverUrl == null) return null;
+    final baseUrl = _effectiveServerUrl;
+    if (baseUrl.isEmpty) return null;
 
     final id = userId ?? _uid;
     if (id == null) return null;
 
-    return '$_serverUrl/web/image?model=res.users&id=$id&field=$field';
+    return '$baseUrl/web/image?model=res.users&id=$id&field=$field';
   }
 
   static void _logRequest(dio.RequestOptions options) {

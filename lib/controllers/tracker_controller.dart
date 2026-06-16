@@ -1,17 +1,18 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:pi_task_watch/controllers/timesheet_controller.dart';
 import 'package:pi_task_watch/models/idle_time_data.dart';
 import 'package:pi_task_watch/models/timesheet_model.dart';
+import 'package:pi_task_watch/utils/log_utils.dart'; // Added
 import 'package:pi_task_watch/services/services.dart';
 import 'package:pi_task_watch/utils/capture_screenshot.dart';
-import 'package:pi_task_watch/widgets/screenshot_notification_dialog.dart';
 import 'package:pi_task_watch/utils/focus_my_window.dart';
 import 'package:pi_task_watch/widgets/idle_time_widget.dart';
 import 'package:window_manager/window_manager.dart';
 
-import '../exports.dart';
+import 'package:pi_task_watch/exports.dart';
 
 class TrackerController extends GetxController {
   // User and settings
@@ -28,7 +29,17 @@ class TrackerController extends GetxController {
 
   // Break time tracking
   final Rx<Duration> totalBreakDuration = Duration.zero.obs;
+  // Overtime alert tracking
+  DateTime? _lastOvertimeAlertTime;
+  bool _isOvertimeDialogShowing = false;
   DateTime? _lastStopTime;
+
+  // Snapshot of the timesheet duration when a work session starts.
+  // This lets the UI add only the *extra* time you work after a restart,
+  // so we don't double-count time that is already saved in the timesheet.
+  Duration _initialTimeEntryDuration = Duration.zero;
+
+  Duration get initialTimeEntryDuration => _initialTimeEntryDuration;
 
   // Session tracking
   final RxList<SessionModel> sessionsList = <SessionModel>[].obs;
@@ -39,6 +50,7 @@ class TrackerController extends GetxController {
   final RxBool _isIdleMode = false.obs;
   final RxBool _isIdleDialogShowing = false.obs;
   final RxList<IdleTimeData> _idleEntryList = <IdleTimeData>[].obs;
+  String _lastIdleNote = '';
   bool get isIdleMode => _isIdleMode.value;
 
   // Timers
@@ -185,6 +197,11 @@ class TrackerController extends GetxController {
         );
       }
 
+      // Remember how much time was already on this timesheet when we started.
+      // For a brand new timesheet this will be zero; for a resumed one it will
+      // be whatever was already recorded (e.g. 2h 38m).
+      _initialTimeEntryDuration = timesheet?.timeSpentDuration ?? Duration.zero;
+
       final startModel = StartWorkModel(
         user: _user.value!,
         project: project,
@@ -197,8 +214,9 @@ class TrackerController extends GetxController {
 
       startWorkData.value = startModel;
       isTracking.value = true;
-      currentTimeEntryDuration.value =
-          timesheet?.timeSpentDuration ?? Duration.zero;
+      // currentTimeEntryDuration always holds the *total* duration for this
+      // timesheet row (initial saved time + newly tracked time).
+      currentTimeEntryDuration.value = _initialTimeEntryDuration;
       lastSessionTime.value = now;
 
       // Reset idle state when starting work
@@ -206,6 +224,7 @@ class TrackerController extends GetxController {
       _isIdleDialogShowing.value = false;
       _isStoppingWork = false;
       lastUserActivityTime.value = now;
+      _lastIdleNote = ''; // Clear last idle note when starting new work
       _screenshotCount = 0; // Reset screenshot counter for new work session
 
       // Restart ALL necessary timers when work starts
@@ -220,6 +239,11 @@ class TrackerController extends GetxController {
       _logDebug(
         'Started work on ${project.name} / ${task.name} at ${now.toString()}',
       );
+
+      // Check for overtime immediately upon starting
+      Future.delayed(const Duration(milliseconds: 500), () {
+        _checkOvertimeAlert();
+      });
     } catch (e, stackTrace) {
       _logDebug('Error starting work: $e');
       _logDebug('Stack trace: $stackTrace');
@@ -259,6 +283,7 @@ class TrackerController extends GetxController {
     isTracking.value = false;
     startWorkData.value = null;
     lastSessionTime.value = null;
+    _initialTimeEntryDuration = Duration.zero;
     _isStoppingWork = false;
 
     await Get.find<TimesheetController>().getAllTimesheet(date: DateTime.now());
@@ -368,29 +393,11 @@ class TrackerController extends GetxController {
             !_isIdleDialogShowing.value) {
           _logDebug('Regular screenshot timer triggered (10-minute interval)');
 
-          // Take screenshot silently in background FIRST
+          // Take screenshot silently in background (completely secret mode)
           _createSession(takeScreenshot: true);
           _screenshotCount++;
-          _logDebug('Screenshot #$_screenshotCount captured silently');
-
-          // Show notification popup AFTER screenshot is taken
-          try {
-            focusMyWindow();
-            await Future.delayed(const Duration(milliseconds: 300));
-
-            if (Get.context != null) {
-              // Show popup notification (auto-dismisses after 3 seconds)
-              unawaited(
-                showDialog(
-                  context: Get.context!,
-                  barrierDismissible: false,
-                  builder: (context) => const ScreenshotNotificationDialog(),
-                ),
-              );
-            }
-          } catch (e) {
-            _logDebug('Error showing screenshot notification: $e');
-          }
+          _logDebug(
+              'Screenshot #$_screenshotCount captured silently (secret mode)');
         }
       },
     );
@@ -622,6 +629,7 @@ class TrackerController extends GetxController {
         currentTimeEntryDuration.value += Duration(seconds: 1);
         startWorkData.value?.duration = currentTimeEntryDuration.value;
         checkIdleStatus();
+        _checkOvertimeAlert();
       }
     });
 
@@ -654,38 +662,44 @@ class TrackerController extends GetxController {
       _createSession(takeScreenshot: true, isIdleSession: true);
       _logDebug('Created session before entering idle mode');
 
-      bool previouslyIsAlwaysOnTop =
-          await WindowManager.instance.isAlwaysOnTop();
+      bool previouslyIsAlwaysOnTop = false;
+      if (GetPlatform.isDesktop) {
+        previouslyIsAlwaysOnTop =
+            await WindowManager.instance.isAlwaysOnTop();
 
-      if (!previouslyIsAlwaysOnTop) {
-        WindowManager.instance.setAlwaysOnTop(true);
+        if (!previouslyIsAlwaysOnTop) {
+          WindowManager.instance.setAlwaysOnTop(true);
+        }
       }
 
       final idleResult = await DialogUtils.showAppDialog(
         context: Get.context!,
         title: "Idle Time Detected",
-        content: IdleTimeWidget(idleTime: idleTime.inSeconds),
+        content: IdleTimeWidget(
+          idleTime: idleTime.inSeconds,
+          initialNote: (startWorkData.value?.notes.isNotEmpty ?? false)
+              ? startWorkData.value?.notes
+              : _lastIdleNote,
+        ),
       );
 
-      if (!previouslyIsAlwaysOnTop) {
+      if (GetPlatform.isDesktop && !previouslyIsAlwaysOnTop) {
         WindowManager.instance.setAlwaysOnTop(false);
       }
 
       _logDebug('Idle dialog completed, processing result');
 
       if (idleResult != null) {
-        // Create idle data with current timesheet ID
-        final idleDataWithTimesheetId = IdleTimeData(
-          keepTime: idleResult.keepTime,
-          idleSeconds: idleResult.idleSeconds,
+        // Create idle data with current timesheet ID, preserving all other fields
+        final idleDataWithTimesheetId = (idleResult as IdleTimeData).copyWith(
           timesheetId: startWorkData.value?.timesheetId ?? 0,
-          note: idleResult.note,
-          projectId: idleResult.projectId,
-          taskId: idleResult.taskId,
         );
 
+        // Save note for next time
+        _lastIdleNote = idleDataWithTimesheetId.note;
+
         _logDebug(
-          'Idle result: keep time=${idleDataWithTimesheetId.keepTime}, seconds=${idleDataWithTimesheetId.idleSeconds}, timesheetId=${idleDataWithTimesheetId.timesheetId}, projectId=${idleDataWithTimesheetId.projectId}, taskId=${idleDataWithTimesheetId.taskId}',
+          'Idle result: mode=${idleDataWithTimesheetId.mode}, keep time=${idleDataWithTimesheetId.keepTime}, seconds=${idleDataWithTimesheetId.idleSeconds}, timesheetId=${idleDataWithTimesheetId.timesheetId}, projectId=${idleDataWithTimesheetId.projectId}, taskId=${idleDataWithTimesheetId.taskId}',
         );
 
         // Immediately attempt to sync idle data to API
@@ -719,7 +733,11 @@ class TrackerController extends GetxController {
               // Stop current work (this saves time to the old task)
               // Don't use the public stopWork method as it cleans up too much
               // Instead, just finalize the current timesheet
-              await updateNotes("Switched to ${selectedTask.name}");
+              // Finalize current work with its ORIGINAL notes
+              // The idle note will still be synced separately via _syncIdleDataImmediately
+              final noteForFinalSession = startWorkData.value!.notes;
+
+              await updateNotes(noteForFinalSession);
               _createSession();
               stopListenAndSendTimesheet();
               await _sendFinalTimesheetSync();
@@ -727,12 +745,10 @@ class TrackerController extends GetxController {
               _logDebug('Starting work on ${selectedTask.name}');
 
               // Start new work on the selected task (fresh timesheet, time starts at 0)
-              // Use the note from idle popup if provided
-              final noteForNewTask =
-                  idleDataWithTimesheetId.note.isNotEmpty &&
-                          idleDataWithTimesheetId.note != 'Time deducted'
-                      ? idleDataWithTimesheetId.note
-                      : '';
+              final noteForNewTask = idleDataWithTimesheetId.note.isNotEmpty &&
+                      idleDataWithTimesheetId.note != 'Time deducted'
+                  ? idleDataWithTimesheetId.note
+                  : '';
 
               startWork(
                 project: newProject,
@@ -778,7 +794,9 @@ class TrackerController extends GetxController {
         }
 
         lastUserActivityTime.value = DateTime.now();
+
         // Update timesheet without creating another session
+        // This preserves the ORIGINAL notes in startWorkData while updating duration if needed
         Get.find<TimesheetController>().updateSyncTimesheet(
           startWorkData: startWorkData.value!,
         );
@@ -833,6 +851,147 @@ class TrackerController extends GetxController {
     _logDebug('Timer check complete');
   }
 
+  void _checkOvertimeAlert() {
+    if (!isTracking.value ||
+        _isStoppingWork ||
+        _isIdleMode.value ||
+        _isIdleDialogShowing.value ||
+        _isOvertimeDialogShowing) {
+      return;
+    }
+
+    final task = startWorkData.value?.task;
+    if (task == null) return;
+
+    final allocated = task.getAllocatedTimeDuration();
+    if (allocated == null || allocated.inSeconds <= 0) return;
+
+    final initialDuration = _initialTimeEntryDuration;
+    final currentSessionDuration = currentTimeEntryDuration.value;
+    final additionalDuration = currentSessionDuration - initialDuration;
+
+    // Total used time is existing task used time + additional time in current session
+    final existingUsedTime = task.getUsedTime() ?? Duration.zero;
+    final totalUsedTime = existingUsedTime + additionalDuration;
+
+    if (totalUsedTime > allocated) {
+      final now = DateTime.now();
+      if (_lastOvertimeAlertTime == null ||
+          now.difference(_lastOvertimeAlertTime!) >=
+              const Duration(minutes: 30)) {
+        _showOvertimeAlert(totalUsedTime);
+      }
+    }
+  }
+
+  Future<void> _showOvertimeAlert(Duration totalUsedTime) async {
+    _isOvertimeDialogShowing = true;
+    _lastOvertimeAlertTime = DateTime.now();
+
+    _logDebug('Showing overtime alert');
+
+    final task = startWorkData.value?.task;
+    final allocated = task?.getAllocatedTimeDuration() ?? Duration.zero;
+    final overtime = totalUsedTime - allocated;
+
+    await DialogUtils.showAppDialog(
+      context: Get.context!,
+      title: "Overtime Alert",
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.warning_amber_rounded,
+            color: Colors.orange,
+            size: 48,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            "You have exceeded the allocated time for this task.",
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.orange.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.orange.shade200),
+            ),
+            child: Column(
+              children: [
+                _buildOvertimeRow("Allocated:", _formatTimeHM(allocated)),
+                const SizedBox(height: 4),
+                _buildOvertimeRow("Used:", _formatTimeHM(totalUsedTime)),
+                const Divider(),
+                _buildOvertimeRow(
+                  "Overtime:",
+                  _formatTimeHM(overtime),
+                  isBold: true,
+                  color: Colors.red,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            "This alert will reappear in 30 minutes if you continue working on this task.",
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        ElevatedButton(
+          onPressed: () => Get.back(),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppTheme.primary,
+          ),
+          child: const Text("OK"),
+        ),
+      ],
+    );
+
+    _isOvertimeDialogShowing = false;
+  }
+
+  Widget _buildOvertimeRow(String label, String value,
+      {bool isBold = false, Color? color}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            color: Colors.grey.shade700,
+          ),
+        ),
+        Text(
+          value,
+          style: GoogleFonts.spaceGrotesk(
+            fontSize: 12,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+            color: color ?? const Color(0xFF25181E),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatTimeHM(Duration duration) {
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes % 60;
+    return '${hours}h ${minutes}m';
+  }
+
   // Utility methods
   bool _isSameDay(DateTime date1, DateTime date2) {
     return date1.year == date2.year &&
@@ -842,8 +1001,6 @@ class TrackerController extends GetxController {
 
   // Logging methods
   void _logDebug(String message) {
-    if (kDebugMode) {
-      print('🔍 TaskWatch: $message');
-    }
+    LogUtils.i('[TrackerController] $message');
   }
 }

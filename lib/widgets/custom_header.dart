@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:pi_task_watch/theme/app_theme.dart';
 
-/// A custom header widget that provides window controls and branding
-/// Supports dragging, maximizing/minimizing, and displays app logo/title
 class CustomHeader extends StatelessWidget {
-  static const double _defaultHeight = 50.0;
-  static const double _iconSize = 28.0;
-  static const double _logoSize = 40.0;
+  static const double _defaultHeight = 44.0;
+  static const double _iconSize = 20.0;
+  static const double _logoSize = 24.0;
   static const double _controlButtonWidth = 36.0;
-  static const double _controlButtonHeight = 32.0;
+  static const double _controlButtonHeight = 28.0;
 
   final String title;
   final String? logoPath;
@@ -37,11 +37,11 @@ class CustomHeader extends StatelessWidget {
             decoration: _buildHeaderDecoration(),
             child: Row(
               children: [
-                const SizedBox(width: 8), // Reduced padding
-                _buildBrandingSection(), // Logo and title
-                const Spacer(), // Push window controls to the right
+                const SizedBox(width: 12),
+                _buildBrandingSection(),
+                const Spacer(),
                 _buildWindowControls(),
-                const SizedBox(width: 8), // Reduced padding
+                const SizedBox(width: 8),
               ],
             ),
           ),
@@ -51,92 +51,37 @@ class CustomHeader extends StatelessWidget {
     );
   }
 
-  /// Creates the header decoration with gradient and shadow
   BoxDecoration _buildHeaderDecoration() {
-    return BoxDecoration(
-      gradient: const LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [Color(0xFFfef7f7), Color(0xFFfdf2f2)],
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.pink.shade100.withOpacity(0.1),
-          blurRadius: 8,
-          offset: const Offset(0, 1),
-        ),
-      ],
+    return const BoxDecoration(
+      color: Colors.white,
     );
   }
 
-  /// Builds an elegant bottom separator with evaluation-style design
   Widget _buildBottomSeparator() {
     return Container(
-      height: 3,
+      height: 1,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: [
-            Colors.transparent,
-            Colors.pink.shade100.withOpacity(0.3),
-            Colors.pink.shade200.withOpacity(0.5),
-            Colors.pink.shade300.withOpacity(0.7),
-            Colors.pink.shade200.withOpacity(0.5),
-            Colors.pink.shade100.withOpacity(0.3),
-            Colors.transparent,
-          ],
-          stops: const [0.0, 0.15, 0.35, 0.5, 0.65, 0.85, 1.0],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.pink.shade100.withOpacity(0.2),
-            blurRadius: 2,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          // Subtle dot pattern for evaluation-style design
-          Positioned.fill(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(
-                20,
-                (index) => Container(
-                  width: 1,
-                  height: 1,
-                  decoration: BoxDecoration(
-                    color: Colors.pink.shade300.withOpacity(0.4),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
+        color: Colors.grey.withOpacity(0.08),
       ),
     );
   }
 
-  /// Builds the branding section with logo and title
   Widget _buildBrandingSection() {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildAppIcon(),
-        const SizedBox(width: 8), // Reduced spacing
+        const SizedBox(width: 10),
         Flexible(
           child: Text(
-            title,
-            style: const TextStyle(
-              color: Color(0xFF2c2c2e),
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              letterSpacing: -0.1,
+            title.toUpperCase(),
+            style: GoogleFonts.spaceGrotesk(
+              color: Colors.black87,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
             ),
-            overflow: TextOverflow.ellipsis, // Handle text overflow
+            overflow: TextOverflow.ellipsis,
             maxLines: 1,
           ),
         ),
@@ -263,14 +208,13 @@ class _WindowControlButtonState extends State<_WindowControlButton> {
     if (!_isHovered) return Colors.transparent;
 
     return widget.isCloseButton
-        ? Colors.red.withOpacity(0.1)
+        ? AppTheme.primary.withOpacity(0.1)
         : Colors.grey.shade100;
   }
 
-  /// Returns appropriate icon color based on hover state and button type
   Color _getIconColor() {
     if (_isHovered && widget.isCloseButton) {
-      return Colors.red.shade700;
+      return AppTheme.primary;
     }
     return Colors.grey.shade600;
   }

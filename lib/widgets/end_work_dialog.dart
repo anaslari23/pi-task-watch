@@ -1,4 +1,5 @@
-import '../exports.dart';
+import 'package:pi_task_watch/exports.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class EndWorkDialog extends StatefulWidget {
   final Function(EndWorkResult result) onStop;
@@ -103,29 +104,36 @@ class _EndWorkDialogState extends State<EndWorkDialog> {
         // Notes field
         Text(
           'Notes *',
-          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+          style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 6),
-        TextField(
-          controller: _notesController,
-          decoration: InputDecoration(
-            hintText: 'Add any notes about what you accomplished',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            isDense: true,
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: AppTheme.surfaceContainer,
+            border: Border.all(color: AppTheme.primary.withOpacity(0.1)),
           ),
-          style: TextStyle(fontSize: 13),
-          maxLines: 6,
+          child: TextField(
+            controller: _notesController,
+            decoration: InputDecoration(
+              hintText: 'What did you accomplish?',
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.all(12),
+              isDense: true,
+              hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 12),
+            ),
+            style: GoogleFonts.inter(fontSize: 12),
+            maxLines: 4,
+          ),
         ),
         const SizedBox(height: 16),
 
-        // Action buttons - now directly in the content
+        // Action buttons
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              style: ButtonStyle(visualDensity: VisualDensity.compact),
               child: const Text('Cancel'),
             ),
             const SizedBox(width: 12),
@@ -139,10 +147,6 @@ class _EndWorkDialogState extends State<EndWorkDialog> {
                 widget.onStop(result);
                 Navigator.of(context).pop();
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.pink.shade400,
-                visualDensity: VisualDensity.compact,
-              ),
               child: const Text('Stop Tracking'),
             ),
           ],

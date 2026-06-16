@@ -3,7 +3,7 @@ publisher: Primacy Infotech
 publisher_url: https://primacyinfotech.com
 display_name: PI Task Watch
 create_desktop_icon: true
-# setup_icon_file: windows/runner/resources/app_icon.ico
+setup_icon_file: windows/runner/resources/app_icon.ico
 locales:
   - en
 # script_template: custom_setup.iss

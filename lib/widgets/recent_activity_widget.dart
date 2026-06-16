@@ -35,24 +35,23 @@ class RecentActivityWidget extends StatelessWidget {
           Obx(() {
             final timesheetList = Get.find<TimesheetController>().timesheetList;
             return Column(
-              children:
-                  timesheetList.map((activity) {
-                    bool isWorking = false;
-                    final workingData =
-                        Get.find<TrackerController>().startWorkData.value;
-                    if (activity.timesheetId == workingData?.timesheetId) {
-                      isWorking = true;
-                    }
+              children: timesheetList.map((activity) {
+                bool isWorking = false;
+                final workingData =
+                    Get.find<TrackerController>().startWorkData.value;
+                if (activity.timesheetId == workingData?.timesheetId) {
+                  isWorking = true;
+                }
 
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
-                      child: _buildRecentTaskItem(
-                        activity,
-                        context,
-                        isCurrentlyWorking: isWorking,
-                      ),
-                    );
-                  }).toList(),
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: _buildRecentTaskItem(
+                    activity,
+                    context,
+                    isCurrentlyWorking: isWorking,
+                  ),
+                );
+              }).toList(),
             );
           }),
         ],
@@ -131,10 +130,9 @@ class RecentActivityWidget extends StatelessWidget {
           color: isCurrentlyWorking ? Colors.pink.shade50 : Colors.grey.shade50,
           borderRadius: BorderRadius.circular(6),
           border: Border.all(
-            color:
-                isCurrentlyWorking
-                    ? Colors.pink.shade200
-                    : Colors.grey.shade200,
+            color: isCurrentlyWorking
+                ? Colors.pink.shade200
+                : Colors.grey.shade200,
             width: 1,
           ),
         ),

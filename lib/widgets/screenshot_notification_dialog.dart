@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:pi_task_watch/theme/app_theme.dart';
 
 class ScreenshotNotificationDialog extends StatefulWidget {
   const ScreenshotNotificationDialog({super.key});
@@ -38,60 +40,71 @@ class _ScreenshotNotificationDialogState
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: Colors.transparent,
+      elevation: 0,
       child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+        padding: const EdgeInsets.all(32),
+        decoration: AppTheme.glassDecoration(
+          borderRadius: 32,
+          color: Colors.white.withOpacity(0.95),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Success icon
+            // Success icon with animated-like presence
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.green.withValues(alpha: 0.1),
+                color: AppTheme.secondary.withOpacity(0.1),
                 shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppTheme.secondary.withOpacity(0.2),
+                  width: 2,
+                ),
               ),
               child: const Icon(
-                Icons.check_circle,
-                size: 48,
-                color: Colors.green,
+                Icons.camera_alt_rounded,
+                size: 40,
+                color: AppTheme.secondary,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             // Title
-            const Text(
-              'Screenshot Captured',
-              style: TextStyle(
-                fontSize: 20,
+            Text(
+              'Capture Success',
+              style: GoogleFonts.spaceGrotesk(
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
+                letterSpacing: -0.5,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             // Message
             Text(
-              'Your work activity has been recorded',
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              'Your work activity snapshot has been securely recorded to the cloud.',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: Colors.grey[600],
+                height: 1.5,
+              ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             // Auto-dismiss indicator
-            Text(
-              'This message will close automatically',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[400],
-                fontStyle: FontStyle.italic,
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                'Auto-closing in 3s',
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[400],
+                  letterSpacing: 0.2,
+                ),
               ),
             ),
           ],

@@ -31,16 +31,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   RustStreamSink<KeyboardEvent> dco_decode_StreamSink_keyboard_event_Sse(
-    dynamic raw,
-  );
+      dynamic raw);
 
   @protected
   RustStreamSink<MouseEvent> dco_decode_StreamSink_mouse_event_Sse(dynamic raw);
 
   @protected
   RustStreamSink<WindowDetails> dco_decode_StreamSink_window_details_Sse(
-    dynamic raw,
-  );
+      dynamic raw);
 
   @protected
   String dco_decode_String(dynamic raw);
@@ -116,18 +114,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   RustStreamSink<KeyboardEvent> sse_decode_StreamSink_keyboard_event_Sse(
-    SseDeserializer deserializer,
-  );
+      SseDeserializer deserializer);
 
   @protected
   RustStreamSink<MouseEvent> sse_decode_StreamSink_mouse_event_Sse(
-    SseDeserializer deserializer,
-  );
+      SseDeserializer deserializer);
 
   @protected
   RustStreamSink<WindowDetails> sse_decode_StreamSink_window_details_Sse(
-    SseDeserializer deserializer,
-  );
+      SseDeserializer deserializer);
 
   @protected
   String sse_decode_String(SseDeserializer deserializer);
@@ -161,8 +156,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<WindowDetails> sse_decode_list_window_details(
-    SseDeserializer deserializer,
-  );
+      SseDeserializer deserializer);
 
   @protected
   MouseEvent sse_decode_mouse_event(SseDeserializer deserializer);
@@ -184,8 +178,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   (int, int, int, int) sse_decode_record_i_32_i_32_i_32_i_32(
-    SseDeserializer deserializer,
-  );
+      SseDeserializer deserializer);
 
   @protected
   int sse_decode_u_32(SseDeserializer deserializer);
@@ -204,27 +197,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_AnyhowException(
-    AnyhowException self,
-    SseSerializer serializer,
-  );
+      AnyhowException self, SseSerializer serializer);
 
   @protected
   void sse_encode_StreamSink_keyboard_event_Sse(
-    RustStreamSink<KeyboardEvent> self,
-    SseSerializer serializer,
-  );
+      RustStreamSink<KeyboardEvent> self, SseSerializer serializer);
 
   @protected
   void sse_encode_StreamSink_mouse_event_Sse(
-    RustStreamSink<MouseEvent> self,
-    SseSerializer serializer,
-  );
+      RustStreamSink<MouseEvent> self, SseSerializer serializer);
 
   @protected
   void sse_encode_StreamSink_window_details_Sse(
-    RustStreamSink<WindowDetails> self,
-    SseSerializer serializer,
-  );
+      RustStreamSink<WindowDetails> self, SseSerializer serializer);
 
   @protected
   void sse_encode_String(String self, SseSerializer serializer);
@@ -252,21 +237,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_list_prim_u_8_strict(
-    Uint8List self,
-    SseSerializer serializer,
-  );
+      Uint8List self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_process_info(
-    List<ProcessInfo> self,
-    SseSerializer serializer,
-  );
+      List<ProcessInfo> self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_window_details(
-    List<WindowDetails> self,
-    SseSerializer serializer,
-  );
+      List<WindowDetails> self, SseSerializer serializer);
 
   @protected
   void sse_encode_mouse_event(MouseEvent self, SseSerializer serializer);
@@ -288,9 +267,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_record_i_32_i_32_i_32_i_32(
-    (int, int, int, int) self,
-    SseSerializer serializer,
-  );
+      (int, int, int, int) self, SseSerializer serializer);
 
   @protected
   void sse_encode_u_32(int self, SseSerializer serializer);

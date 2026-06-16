@@ -1,7 +1,6 @@
 import 'dart:convert';
 
-
-import '../exports.dart';
+import 'package:pi_task_watch/exports.dart';
 
 class OdooNetworkImage extends StatelessWidget {
   final String? model;
@@ -28,9 +27,9 @@ class OdooNetworkImage extends StatelessWidget {
     this.base64Data,
     this.directImageUrl,
   }) : assert(
-         directImageUrl != null || (model != null && id != null),
-         'Either directImageUrl must be provided, or both model and id must be provided',
-       );
+          directImageUrl != null || (model != null && id != null),
+          'Either directImageUrl must be provided, or both model and id must be provided',
+        );
 
   String get _imageUrl {
     // If direct URL is provided, use it as-is
@@ -100,20 +99,19 @@ class OdooNetworkImage extends StatelessWidget {
             if (wasSynchronouslyLoaded) return child;
             return AnimatedSwitcher(
               duration: const Duration(milliseconds: 200),
-              child:
-                  frame != null
-                      ? child
-                      : placeholder ??
-                          Center(
-                            child: SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Theme.of(context).primaryColor,
-                              ),
-                            ),
+              child: frame != null
+                  ? child
+                  : placeholder ??
+                      Center(
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Theme.of(context).primaryColor,
                           ),
+                        ),
+                      ),
             );
           },
         );
@@ -163,11 +161,10 @@ class OdooNetworkImage extends StatelessWidget {
                 width: 24,
                 height: 24,
                 child: CircularProgressIndicator(
-                  value:
-                      loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded /
-                              loadingProgress.expectedTotalBytes!
-                          : null,
+                  value: loadingProgress.expectedTotalBytes != null
+                      ? loadingProgress.cumulativeBytesLoaded /
+                          loadingProgress.expectedTotalBytes!
+                      : null,
                   strokeWidth: 2,
                   color: Theme.of(context).primaryColor,
                 ),

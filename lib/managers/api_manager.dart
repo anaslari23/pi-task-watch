@@ -1,11 +1,12 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
+
 import 'package:logger/logger.dart';
 import 'package:pi_task_watch/utils/get_secure_http_dio_client.dart';
+import 'package:pi_task_watch/utils/log_utils.dart'; // Added
 
-import '../exports.dart';
+import 'package:pi_task_watch/exports.dart';
 
 enum RequestType { get, post, put, delete, patch, head }
 
@@ -27,16 +28,16 @@ class ApiManager {
     final String cleanEndpoint =
         endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
 
-    // Create full URL, ensuring no double slashes or "null" strings
-    final String url = isFullUrl ? endpoint : "$baseUrl/$cleanEndpoint";
+    // Create full URL, ensuring no double slashes after the domain
+    String url = isFullUrl ? endpoint : "$baseUrl/$cleanEndpoint";
 
-    // Validate URL doesn't contain "null" string
-    if (url.contains("null")) {
-      final logger = Logger();
-      logger.e("URL contains 'null': $url");
-      // Fix the URL by removing "null"
-      final cleanUrl = url.replaceAll("null", "");
-      logger.i("Cleaned URL: $cleanUrl");
+    // Validate URL doesn't contain "null" string as a segment
+    // This often happens if some dynamic variable was null during concatenation
+    if (url.contains("/null") || url.endsWith("/null")) {
+      LogUtils.e("URL contains 'null' segment: $url");
+      // Fix the URL by removing the "null" segment correctly
+      final cleanUrl = url.replaceAll("/null", "");
+      LogUtils.i("Cleaned URL: $cleanUrl");
 
       if (queryParameters != null && queryParameters.isNotEmpty) {
         // Convert all values to strings for the URI builder
@@ -71,8 +72,8 @@ class ApiManager {
     bool showMessage = showMessageGlobal,
     bool showLoader = showLoaderGlobal,
     Map<String, dynamic>? queryParameters,
+    Map<String, String>? customHeaders, // Add custom headers parameter
   }) async {
-    final logger = Logger();
 
     try {
       final DateTime startTime = DateTime.now();
@@ -90,17 +91,16 @@ class ApiManager {
           data != null && data.isNotEmpty ? jsonEncode(data) : null;
 
       if (showLog) {
-        Map<String, dynamic> logData = <String, dynamic>{
-          "REQUEST ID": requestId,
-          "DATE TIME": DateFormat().format(startTime),
-          "METHOD": type.name,
-          "URL": requestUrl,
-          "HEADERS": headers(),
-          "PARAMETERS": queryParameters ?? {},
-          "BODY": jsonBody,
-        };
-
-        logger.e(logData);
+        LogUtils.i("\n" + "=" * 80);
+        LogUtils.i("🌐 [API REQUEST] ${type.name.toUpperCase()}");
+        LogUtils.i("🔗 URL: $requestUrl");
+        if (queryParameters != null && queryParameters.isNotEmpty) {
+          LogUtils.i("❓ QUERY PARAMS: $queryParameters");
+        }
+        if (jsonBody != null) {
+          LogUtils.i("📤 BODY: $jsonBody");
+        }
+        LogUtils.i("-" * 80);
       }
 
       late http.Response rawResponse;
@@ -111,40 +111,43 @@ class ApiManager {
 
       final client = 1 == 1 ? await httpClient : http.Client();
 
+      // Merge default headers with custom headers
+      final mergedHeaders = {...headers(), ...?customHeaders};
+
       switch (type) {
         case RequestType.get:
-          rawResponse = await client.get(uri, headers: headers());
+          rawResponse = await client.get(uri, headers: mergedHeaders);
           break;
         case RequestType.post:
           rawResponse = await client.post(
             uri,
-            headers: headers(),
+            headers: mergedHeaders,
             body: jsonBody,
           );
           break;
         case RequestType.put:
           rawResponse = await client.put(
             uri,
-            headers: headers(),
+            headers: mergedHeaders,
             body: jsonBody,
           );
           break;
         case RequestType.delete:
           rawResponse = await client.delete(
             uri,
-            headers: headers(),
+            headers: mergedHeaders,
             body: jsonBody,
           );
           break;
         case RequestType.patch:
           rawResponse = await client.patch(
             uri,
-            headers: headers(),
+            headers: mergedHeaders,
             body: jsonBody,
           );
           break;
         case RequestType.head:
-          rawResponse = await client.head(uri, headers: headers());
+          rawResponse = await client.head(uri, headers: mergedHeaders);
           break;
       }
 
@@ -165,16 +168,10 @@ class ApiManager {
       }
 
       if (showLog) {
-        Map<String, dynamic> logResponse = <String, dynamic>{
-          "RESPONSE ID": requestId,
-          "DATE TIME": DateFormat().format(endTime),
-          "STATUS CODE": apiResponse.rawResponse.statusCode,
-          "DURATION": "${duration.inMilliseconds} Milliseconds",
-          "HEADERS": apiResponse.rawResponse.headers,
-          "BODY": apiResponse.body,
-        };
-
-        logger.e(logResponse);
+        LogUtils.i("📥 [API RESPONSE] ${apiResponse.statusCode}");
+        LogUtils.i("🕒 DURATION: ${duration.inMilliseconds}ms");
+        LogUtils.i("📦 BODY: ${apiResponse.body}");
+        LogUtils.i("=" * 80 + "\n");
       }
 
       return apiResponse;
@@ -182,7 +179,7 @@ class ApiManager {
       if (showLoader) {
         LoadingManager.dismissLoading();
       }
-      logger.e("API REQUEST EXCEPTION: ${e.toString()}");
+      LogUtils.e("API REQUEST EXCEPTION: ${e.toString()}");
       throw Exception(e);
     }
   }
@@ -216,6 +213,7 @@ class ApiManager {
     bool showMessage = showMessageGlobal,
     bool showLoader = showLoaderGlobal,
     Map<String, dynamic>? queryParameters,
+    Map<String, String>? customHeaders,
   }) {
     return ApiManager.request(
       type: RequestType.post,
@@ -226,6 +224,7 @@ class ApiManager {
       showMessage: showMessage,
       showLoader: showLoader,
       queryParameters: queryParameters,
+      customHeaders: customHeaders,
     );
   }
 
@@ -316,8 +315,9 @@ class ApiManager {
   static Map<String, String> headers() {
     final token = Get.find<AuthController>().user.value?.token;
     return <String, String>{
-      "Content-type": "application/json",
+      "Content-Type": "application/json",
       "Accept": "application/json",
+      "X-Requested-With": "XMLHttpRequest",
       "Access-Control-Allow-Origin": "*",
       if (token != null) "Authorization": "Bearer $token",
       // add standers session cockie header
@@ -354,12 +354,14 @@ class ApiResponse<T> {
     return r;
   }
 
-  bool get isSuccess =>
-      body['success'] == true ||
-      body['status'] == 'success' ||
-      body['status'] == 'ok' ||
-      body['status'] == '1' ||
-      body['status'] == 1;
+  bool get isSuccess {
+    if (body == null || body is! Map) return false;
+    return body['success'] == true ||
+        body['status'] == 'success' ||
+        body['status'] == 'ok' ||
+        body['status'] == '1' ||
+        body['status'] == 1;
+  }
 
   bool get isNotSuccess => !isSuccess;
 

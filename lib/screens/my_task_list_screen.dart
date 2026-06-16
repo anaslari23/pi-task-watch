@@ -4,9 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:pi_task_watch/controllers/task_controller.dart';
-import 'package:url_launcher/url_launcher_string.dart';
+import 'package:pi_task_watch/theme/app_theme.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-import '../models/task_model.dart';
+import 'package:pi_task_watch/models/task_model.dart';
+import 'package:pi_task_watch/models/task_details_model.dart';
+import 'task_detail_screen.dart';
 
 class MyTaskListScreen extends StatefulWidget {
   static const String routeName = '/my-task-list';
@@ -30,8 +33,6 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
   final Map<String, Set<String>> _uniqueValuesCache = {};
   Timer? _searchDebounce;
 
-  static const searchFieldPadding = EdgeInsets.symmetric(horizontal: 8);
-
   @override
   void dispose() {
     _searchDebounce?.cancel();
@@ -53,11 +54,10 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
     String? Function(TaskModel) selector,
   ) {
     if (!_uniqueValuesCache.containsKey(key)) {
-      _uniqueValuesCache[key] =
-          _tasks
-              .where((task) => selector(task) != null)
-              .map((task) => selector(task)!)
-              .toSet();
+      _uniqueValuesCache[key] = _tasks
+          .where((task) => selector(task) != null)
+          .map((task) => selector(task)!)
+          .toSet();
     }
     return _uniqueValuesCache[key]!;
   }
@@ -128,37 +128,35 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
 
   void _applyFilters() {
     setState(() {
-      _filteredTasks =
-          _tasks.where((task) {
-            if (!_filterOptions.isWithinTimeRange(task)) {
-              return false;
-            }
+      _filteredTasks = _tasks.where((task) {
+        if (!_filterOptions.isWithinTimeRange(task)) {
+          return false;
+        }
 
-            if (_filterOptions.projectName != null &&
-                task.projectName != _filterOptions.projectName) {
-              return false;
-            }
+        if (_filterOptions.projectName != null &&
+            task.projectName != _filterOptions.projectName) {
+          return false;
+        }
 
-            if (_filterOptions.stageName != null &&
-                task.stageName != _filterOptions.stageName) {
-              return false;
-            }
+        if (_filterOptions.stageName != null &&
+            task.stageName != _filterOptions.stageName) {
+          return false;
+        }
 
-            if (!_filterOptions.showOverdueTasks && task.isOverdue()) {
-              return false;
-            }
+        if (!_filterOptions.showOverdueTasks && task.isOverdue()) {
+          return false;
+        }
 
-            return true;
-          }).toList();
+        return true;
+      }).toList();
 
       if (_searchQuery.isNotEmpty) {
         final query = _searchQuery.toLowerCase();
-        _filteredTasks =
-            _filteredTasks.where((task) {
-              return task.name.toLowerCase().contains(query) ||
-                  (task.projectName?.toLowerCase().contains(query) ?? false) ||
-                  (task.stageName?.toLowerCase().contains(query) ?? false);
-            }).toList();
+        _filteredTasks = _filteredTasks.where((task) {
+          return task.name.toLowerCase().contains(query) ||
+              (task.projectName?.toLowerCase().contains(query) ?? false) ||
+              (task.stageName?.toLowerCase().contains(query) ?? false);
+        }).toList();
       }
 
       _sortTasks();
@@ -181,151 +179,133 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
       context: context,
       barrierDismissible: true,
       barrierColor: Colors.black54,
-      builder:
-          (dialogContext) => StatefulBuilder(
-            builder:
-                (context, setDialogState) => AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  child: Dialog(
-                    insetPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 24,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Container(
-                      width: double.infinity,
-                      constraints: BoxConstraints(
-                        maxWidth: 320,
-                        maxHeight: MediaQuery.of(context).size.height * 0.8,
-                      ),
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          child: Dialog(
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 24,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Container(
+              width: double.infinity,
+              constraints: BoxConstraints(
+                maxWidth: 320,
+                maxHeight: MediaQuery.of(context).size.height * 0.8,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildFilterDialogHeader(dialogContext),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildFilterDialogHeader(dialogContext),
-                          Flexible(
-                            child: SingleChildScrollView(
-                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _buildDateRangeSection(
-                                    tempFilterOptions,
-                                    setDialogState,
-                                  ),
-                                  if (_getUniqueProjects().isNotEmpty) ...[
-                                    const SizedBox(height: 16),
-                                    _buildDropdownSection(
-                                      label: 'Project',
-                                      value: tempFilterOptions.projectName,
-                                      items: _getUniqueProjects(),
-                                      onChanged:
-                                          (value) => setDialogState(() {
-                                            tempFilterOptions.projectName =
-                                                value;
-                                          }),
-                                    ),
-                                  ],
-                                  if (_getUniqueStages().isNotEmpty) ...[
-                                    const SizedBox(height: 16),
-                                    _buildDropdownSection(
-                                      label: 'Stage',
-                                      value: tempFilterOptions.stageName,
-                                      items: _getUniqueStages(),
-                                      onChanged:
-                                          (value) => setDialogState(() {
-                                            tempFilterOptions.stageName = value;
-                                          }),
-                                    ),
-                                  ],
-                                  const SizedBox(height: 16),
-                                  _buildTimeRangeSection(
-                                    tempFilterOptions,
-                                    setDialogState,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  _buildOverdueSwitch(
-                                    tempFilterOptions,
-                                    setDialogState,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  _buildCompletedTasksSwitch(
-                                    tempFilterOptions,
-                                    setDialogState,
-                                  ),
-                                  const SizedBox(height: 16),
-                                ],
-                              ),
-                            ),
-                          ),
-                          _buildFilterDialogActions(
+                          _buildDateRangeSection(
                             tempFilterOptions,
-                            dialogContext,
+                            setDialogState,
                           ),
+                          if (_getUniqueProjects().isNotEmpty) ...[
+                            const SizedBox(height: 16),
+                            _buildDropdownSection(
+                              label: 'Project',
+                              value: tempFilterOptions.projectName,
+                              items: _getUniqueProjects(),
+                              onChanged: (value) => setDialogState(() {
+                                tempFilterOptions.projectName = value;
+                              }),
+                            ),
+                          ],
+                          if (_getUniqueStages().isNotEmpty) ...[
+                            const SizedBox(height: 16),
+                            _buildDropdownSection(
+                              label: 'Stage',
+                              value: tempFilterOptions.stageName,
+                              items: _getUniqueStages(),
+                              onChanged: (value) => setDialogState(() {
+                                tempFilterOptions.stageName = value;
+                              }),
+                            ),
+                          ],
+                          const SizedBox(height: 16),
+                          _buildTimeRangeSection(
+                            tempFilterOptions,
+                            setDialogState,
+                          ),
+                          const SizedBox(height: 16),
+                          _buildOverdueSwitch(
+                            tempFilterOptions,
+                            setDialogState,
+                          ),
+                          const SizedBox(height: 8),
+                          _buildCompletedTasksSwitch(
+                            tempFilterOptions,
+                            setDialogState,
+                          ),
+                          const SizedBox(height: 16),
                         ],
                       ),
                     ),
                   ),
-                ),
+                  _buildFilterDialogActions(
+                    tempFilterOptions,
+                    dialogContext,
+                  ),
+                ],
+              ),
+            ),
           ),
+        ),
+      ),
     );
   }
 
   Widget _buildFilterDialogHeader(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Theme.of(context).primaryColor,
-            Theme.of(context).primaryColor.withOpacity(0.9),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(12),
-          topRight: Radius.circular(12),
+      padding: const EdgeInsets.fromLTRB(20, 20, 16, 16),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
         ),
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(6),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(8),
+              color: AppTheme.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
-              Icons.filter_alt_rounded,
-              color: Colors.white,
-              size: 18,
+              Icons.filter_list_rounded,
+              color: AppTheme.primary,
+              size: 20,
             ),
           ),
-          const SizedBox(width: 12),
-          const Text(
+          const SizedBox(width: 16),
+          Text(
             'Filter Tasks',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
+            style: GoogleFonts.spaceGrotesk(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
             ),
           ),
           const Spacer(),
-          Material(
-            color: Colors.white.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(20),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(20),
-              onTap: () => Navigator.pop(context),
-              child: const Padding(
-                padding: EdgeInsets.all(4),
-                child: Icon(Icons.close_rounded, color: Colors.white, size: 18),
-              ),
-            ),
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.close_rounded, color: Colors.grey, size: 20),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
           ),
         ],
       ),
@@ -343,14 +323,20 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
       children: [
         Text(
           label,
-          style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+            color: Colors.black87,
+          ),
         ),
         const SizedBox(height: 8),
         Container(
-          height: 40,
+          height: 44,
+          padding: const EdgeInsets.symmetric(horizontal: 4),
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade300),
-            borderRadius: BorderRadius.circular(8),
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade200),
           ),
           child: DropdownButtonHideUnderline(
             child: ButtonTheme(
@@ -358,16 +344,16 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
               child: DropdownButton<String>(
                 isExpanded: true,
                 value: value,
-                icon: const Icon(Icons.arrow_drop_down, size: 20),
-                iconSize: 20,
-                elevation: 1,
-                style: TextStyle(fontSize: 13, color: Colors.grey[800]),
+                icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
+                elevation: 4,
+                borderRadius: BorderRadius.circular(16),
+                style: GoogleFonts.inter(fontSize: 13, color: Colors.black87),
                 items: [
                   DropdownMenuItem(
                     value: null,
                     child: Text(
                       'All',
-                      style: TextStyle(color: Colors.grey[600]),
+                      style: GoogleFonts.inter(color: Colors.grey.shade500),
                     ),
                   ),
                   ...items.map(
@@ -391,36 +377,62 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
     BuildContext context,
   ) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-      decoration: BoxDecoration(
-        border: Border(top: BorderSide(color: Colors.grey.shade200)),
-      ),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          TextButton(
-            onPressed: () {
-              setState(() {
-                _filterOptions = FilterOptions(
-                  startDate: DateTime.now(),
-                  endDate: DateTime.now(),
-                );
-                _applyFilters();
-              });
-              Navigator.pop(context);
-            },
-            child: const Text('Reset'),
+          Expanded(
+            child: TextButton(
+              onPressed: () {
+                setState(() {
+                  _filterOptions = FilterOptions(
+                    startDate: DateTime.now(),
+                    endDate: DateTime.now(),
+                  );
+                  _applyFilters();
+                });
+                Navigator.pop(context);
+              },
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                'Reset All',
+                style: GoogleFonts.inter(
+                  color: Colors.grey.shade600,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
           ),
-          const SizedBox(width: 8),
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                _filterOptions = tempOptions;
-                _applyFilters();
-              });
-              Navigator.pop(context);
-            },
-            child: const Text('Apply'),
+          const SizedBox(width: 12),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _filterOptions = tempOptions;
+                  _applyFilters();
+                });
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                'Show Results',
+                style: GoogleFonts.inter(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -434,59 +446,73 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Date Range',
-          style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+            color: Colors.black87,
+          ),
         ),
         const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade300),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  options.startDate != null
-                      ? '${DateFormat('dd/MM/yyyy').format(options.startDate!)} - ${options.endDate != null ? DateFormat('dd/MM/yyyy').format(options.endDate!) : 'Now'}'
-                      : 'All Dates',
-                  style: const TextStyle(fontSize: 13),
+        GestureDetector(
+          onTap: () async {
+            final range = await _selectDateRange(context, options);
+            if (range != null) {
+              setDialogState(() {
+                options.startDate = range.start;
+                options.endDate = range.end;
+              });
+            }
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.calendar_month_rounded,
+                    size: 18, color: Colors.grey[600]),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    options.startDate != null
+                        ? '${DateFormat('dd/MM/yyyy').format(options.startDate!)} - ${options.endDate != null ? DateFormat('dd/MM/yyyy').format(options.endDate!) : 'Now'}'
+                        : 'Select date range',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: options.startDate != null
+                          ? Colors.black87
+                          : Colors.grey.shade500,
+                    ),
+                  ),
                 ),
-              ),
-              if (options.startDate != null)
-                IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  icon: Icon(Icons.clear, size: 16, color: Colors.grey[600]),
-                  onPressed: () {
-                    setDialogState(() {
-                      options.startDate = null;
-                      options.endDate = null;
-                    });
-                  },
-                ),
-              const SizedBox(width: 8),
-              TextButton(
-                style: TextButton.styleFrom(
-                  visualDensity: VisualDensity.compact,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                ),
-                onPressed: () async {
-                  final range = await _selectDateRange(context, options);
-                  if (range != null) {
-                    setDialogState(() {
-                      options.startDate = range.start;
-                      options.endDate = range.end;
-                    });
-                  }
-                },
-                child: const Text('Select', style: TextStyle(fontSize: 12)),
-              ),
-            ],
+                if (options.startDate != null)
+                  GestureDetector(
+                    onTap: () {
+                      setDialogState(() {
+                        options.startDate = null;
+                        options.endDate = null;
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.close_rounded,
+                          size: 12, color: Colors.grey[600]),
+                    ),
+                  )
+                else
+                  Icon(Icons.chevron_right_rounded,
+                      size: 18, color: Colors.grey[400]),
+              ],
+            ),
           ),
         ),
       ],
@@ -500,16 +526,20 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Time Range',
-          style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+            color: Colors.black87,
+          ),
         ),
         const SizedBox(height: 8),
         Row(
           children: [
             Expanded(
               child: _buildTimePicker(
-                label: 'Start Time',
+                label: 'Start',
                 time: options.startTime,
                 onTimeSelected: (time) {
                   setDialogState(() {
@@ -518,10 +548,10 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
                 },
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
             Expanded(
               child: _buildTimePicker(
-                label: 'End Time',
+                label: 'End',
                 time: options.endTime,
                 onTimeSelected: (time) {
                   setDialogState(() {
@@ -550,19 +580,24 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
         onTimeSelected(selectedTime);
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.shade300),
-          borderRadius: BorderRadius.circular(8),
+          color: Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
         ),
         child: Row(
           children: [
-            Icon(Icons.access_time, size: 16, color: Colors.grey[600]),
-            const SizedBox(width: 8),
+            Icon(Icons.access_time_rounded, size: 18, color: Colors.grey[600]),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
-                time != null ? time.format(context) : 'Select $label',
-                style: const TextStyle(fontSize: 13),
+                time != null ? time.format(context) : label,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: time != null ? Colors.black87 : Colors.grey.shade500,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -577,7 +612,11 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
   ) {
     return SwitchListTile.adaptive(
       contentPadding: EdgeInsets.zero,
-      title: const Text('Show Overdue Tasks', style: TextStyle(fontSize: 13)),
+      activeColor: AppTheme.primary,
+      title: Text(
+        'Show Overdue Tasks',
+        style: GoogleFonts.inter(fontSize: 13, color: Colors.black87),
+      ),
       value: options.showOverdueTasks,
       onChanged: (value) {
         setDialogState(() {
@@ -593,7 +632,11 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
   ) {
     return SwitchListTile.adaptive(
       contentPadding: EdgeInsets.zero,
-      title: const Text('Show Completed Tasks', style: TextStyle(fontSize: 13)),
+      activeColor: AppTheme.primary,
+      title: Text(
+        'Show Completed Tasks',
+        style: GoogleFonts.inter(fontSize: 13, color: Colors.black87),
+      ),
       value: options.showCompletedTasks,
       onChanged: (value) {
         setDialogState(() {
@@ -633,13 +676,13 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
           return Theme(
             data: Theme.of(context).copyWith(
               appBarTheme: Theme.of(context).appBarTheme.copyWith(
-                backgroundColor: Theme.of(context).primaryColor,
-                iconTheme: const IconThemeData(color: Colors.white),
-                titleTextStyle: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                ),
-              ),
+                    backgroundColor: Theme.of(context).primaryColor,
+                    iconTheme: const IconThemeData(color: Colors.white),
+                    titleTextStyle: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                    ),
+                  ),
             ),
             child: child!,
           );
@@ -803,21 +846,20 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
           color: isSelected ? Theme.of(context).primaryColor : Colors.grey[800],
         ),
       ),
-      trailing:
-          isSelected
-              ? Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.check_rounded,
-                  color: Theme.of(context).primaryColor,
-                  size: 16,
-                ),
-              )
-              : null,
+      trailing: isSelected
+          ? Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.check_rounded,
+                color: Theme.of(context).primaryColor,
+                size: 16,
+              ),
+            )
+          : null,
       onTap: () {
         setState(() {
           _sortBy = value;
@@ -857,14 +899,12 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
     // Format date times
     final startDateTime = task.getStartDateTime();
     final endDateTime = task.getEndDateTime();
-    final startDateFormatted =
-        startDateTime != null
-            ? DateFormat('MMM dd, hh:mm a').format(startDateTime)
-            : 'N/A';
-    final endDateFormatted =
-        endDateTime != null
-            ? DateFormat('MMM dd, hh:mm a').format(endDateTime)
-            : 'N/A';
+    final startDateFormatted = startDateTime != null
+        ? DateFormat('MMM dd, hh:mm a').format(startDateTime)
+        : 'N/A';
+    final endDateFormatted = endDateTime != null
+        ? DateFormat('MMM dd, hh:mm a').format(endDateTime)
+        : 'N/A';
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -907,8 +947,18 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
                       // Info button moved to beginning for better positioning
                       InkWell(
                         onTap: () {
-                          launchUrlString(
-                            task.task_url ?? "https://app.primacyinfotech.com",
+                          // Pass TaskDetailsModel instead of TaskModel
+                          Get.toNamed(
+                            TaskDetailScreen.routeName,
+                            arguments: TaskDetailsModel(
+                              id: task.id,
+                              name: task.name,
+                              projectId: task.projectId,
+                              projectName: task.projectName,
+                              stageId: task.stageId ?? 0,
+                              stageName: task.stageName,
+                              dateDeadline: task.getEndDateTime(),
+                            ),
                           );
                         },
                         child: Container(
@@ -1075,16 +1125,14 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color:
-                              isNegativeTime
-                                  ? Colors.red.shade50
-                                  : Colors.green.shade50,
+                          color: isNegativeTime
+                              ? Colors.red.shade50
+                              : Colors.green.shade50,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color:
-                                isNegativeTime
-                                    ? Colors.red.shade200
-                                    : Colors.green.shade200,
+                            color: isNegativeTime
+                                ? Colors.red.shade200
+                                : Colors.green.shade200,
                             width: 1,
                           ),
                         ),
@@ -1094,10 +1142,9 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
                             Icon(
                               isNegativeTime ? Icons.alarm_off : Icons.alarm_on,
                               size: 12,
-                              color:
-                                  isNegativeTime
-                                      ? Colors.red.shade700
-                                      : Colors.green.shade700,
+                              color: isNegativeTime
+                                  ? Colors.red.shade700
+                                  : Colors.green.shade700,
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -1106,10 +1153,9 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
                                   : '${task.getFormattedRemainingTime()} left',
                               style: TextStyle(
                                 fontSize: 11,
-                                color:
-                                    isNegativeTime
-                                        ? Colors.red.shade700
-                                        : Colors.green.shade700,
+                                color: isNegativeTime
+                                    ? Colors.red.shade700
+                                    : Colors.green.shade700,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -1150,34 +1196,37 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildHeader(constraints),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: _buildSearchField(),
-                ),
-                Expanded(
-                  child:
-                      _isLoading
-                          ? _buildLoadingState()
-                          : RefreshIndicator(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: AppTheme.editorialGradient,
+        ),
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildHeader(constraints),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                    child: _buildSearchField(),
+                  ),
+                  Expanded(
+                    child: _isLoading
+                        ? _buildLoadingState()
+                        : RefreshIndicator(
                             onRefresh: _loadTasks,
-                            color: Theme.of(context).primaryColor,
-                            child:
-                                _filteredTasks.isEmpty
-                                    ? _buildEmptyState()
-                                    : _buildTaskList(),
+                            color: AppTheme.primary,
+                            backgroundColor: Colors.white,
+                            child: _filteredTasks.isEmpty
+                                ? _buildEmptyState()
+                                : _buildTaskList(),
                           ),
-                ),
-              ],
-            );
-          },
+                  ),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -1185,31 +1234,30 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
 
   Widget _buildHeader(BoxConstraints constraints) {
     return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 1),
-        ],
+      decoration: AppTheme.glassDecoration(
+        borderRadius: 0,
+        elevated: false,
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
       child: Column(
         children: [
           Row(
             children: [
               Icon(
                 Icons.task_alt,
-                size: 16,
-                color: Theme.of(context).primaryColor,
+                size: 20,
+                color: AppTheme.primary,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   _filterOptions.startDate != null
                       ? formatDateWithOrdinal(_filterOptions.startDate!)
                       : 'All Tasks',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
+                  style: GoogleFonts.spaceGrotesk(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: Colors.black87,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -1241,10 +1289,9 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
         const SizedBox(width: 6),
         _buildIconButton(
           icon: Icons.filter_alt_rounded,
-          color:
-              _hasActiveFilters()
-                  ? Theme.of(context).primaryColor
-                  : Colors.grey[700],
+          color: _hasActiveFilters()
+              ? Theme.of(context).primaryColor
+              : Colors.grey[700],
           onTap: _showFilterDialog,
           withBackground: true,
           isActive: _hasActiveFilters(),
@@ -1275,23 +1322,20 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
         child: Container(
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color:
-                withBackground
-                    ? isActive
-                        ? Theme.of(context).primaryColor.withOpacity(0.1)
-                        : Colors.grey[100]
-                    : Colors.transparent,
+            color: withBackground
+                ? isActive
+                    ? Theme.of(context).primaryColor.withOpacity(0.1)
+                    : Colors.grey[100]
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
-            border:
-                withBackground
-                    ? Border.all(
-                      color:
-                          isActive
-                              ? Theme.of(context).primaryColor.withOpacity(0.3)
-                              : Colors.grey[300]!,
-                      width: 1,
-                    )
-                    : null,
+            border: withBackground
+                ? Border.all(
+                    color: isActive
+                        ? Theme.of(context).primaryColor.withOpacity(0.3)
+                        : Colors.grey[300]!,
+                    width: 1,
+                  )
+                : null,
           ),
           child: Icon(
             icon,
@@ -1305,39 +1349,44 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
 
   Widget _buildSearchField() {
     return Container(
-      height: 36,
-      padding: searchFieldPadding,
+      height: 48,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: TextField(
         decoration: InputDecoration(
           isDense: true,
           hintText: 'Search tasks...',
-          hintStyle: TextStyle(fontSize: 13, color: Colors.grey[400]),
-          prefixIcon: Icon(Icons.search, size: 18, color: Colors.grey[400]),
-          suffixIcon:
-              _searchQuery.isNotEmpty
-                  ? IconButton(
-                    padding: EdgeInsets.zero,
-                    icon: Icon(Icons.clear, size: 16, color: Colors.grey[400]),
-                    onPressed: () {
-                      setState(() {
-                        _searchQuery = '';
-                        _applyFilters();
-                      });
-                    },
-                  )
-                  : null,
-          border: const OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(8)),
-            borderSide: BorderSide(color: Colors.grey),
-          ),
+          hintStyle: GoogleFonts.inter(fontSize: 14, color: Colors.grey[400]),
+          prefixIcon: Icon(Icons.search, size: 20, color: Colors.grey[400]),
+          suffixIcon: _searchQuery.isNotEmpty
+              ? IconButton(
+                  padding: EdgeInsets.zero,
+                  icon: Icon(Icons.clear, size: 18, color: Colors.grey[400]),
+                  onPressed: () {
+                    setState(() {
+                      _searchQuery = '';
+                      _applyFilters();
+                    });
+                  },
+                )
+              : null,
+          border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
-            vertical: 0,
-            horizontal: 12,
+            vertical: 14,
+            horizontal: 16,
           ),
-          filled: true,
-          fillColor: Colors.grey.shade50,
         ),
-        style: const TextStyle(fontSize: 13),
+        style: GoogleFonts.inter(fontSize: 14),
         onChanged: _onSearchChanged,
       ),
     );
@@ -1372,17 +1421,15 @@ class _MyTaskListScreenState extends State<MyTaskListScreen>
       final startDate = DateFormat(
         'dd/MM/yyyy',
       ).format(_filterOptions.startDate!);
-      final endDate =
-          _filterOptions.endDate != null
-              ? DateFormat('dd/MM/yyyy').format(_filterOptions.endDate!)
-              : startDate;
+      final endDate = _filterOptions.endDate != null
+          ? DateFormat('dd/MM/yyyy').format(_filterOptions.endDate!)
+          : startDate;
 
       chips.add(
         _buildFilterChip(
-          label:
-              startDate == endDate
-                  ? 'Date: $startDate'
-                  : 'Date: $startDate - $endDate',
+          label: startDate == endDate
+              ? 'Date: $startDate'
+              : 'Date: $startDate - $endDate',
           onDeleted: () {
             setState(() {
               _filterOptions.startDate = null;
@@ -1565,10 +1612,9 @@ class FilterOptions {
       startDate!.day,
     );
 
-    final filterEndDate =
-        endDate != null
-            ? DateTime(endDate!.year, endDate!.month, endDate!.day)
-            : filterStartDate;
+    final filterEndDate = endDate != null
+        ? DateTime(endDate!.year, endDate!.month, endDate!.day)
+        : filterStartDate;
 
     // Handle case when only end date is available
     if (taskStartDateTime == null && taskEndDateTime != null) {
@@ -1623,8 +1669,7 @@ class FilterOptions {
         return false;
       }
 
-      bool isWithinRange =
-          (!taskStartDate.isBefore(filterStartDate) &&
+      bool isWithinRange = (!taskStartDate.isBefore(filterStartDate) &&
               !taskStartDate.isAfter(filterEndDate)) ||
           (!taskEndDate.isBefore(filterStartDate) &&
               !taskEndDate.isAfter(filterEndDate)) ||

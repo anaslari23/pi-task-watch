@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:pi_task_watch/theme/app_theme.dart';
 
 class CompactButton extends StatelessWidget {
   final VoidCallback? onPressed;
@@ -12,71 +14,68 @@ class CompactButton extends StatelessWidget {
   final double fontSize;
   final FontWeight fontWeight;
   final double elevation;
-  final bool isOutlined; // Added isOutlined parameter
-  final bool fullWidth; // Added fullWidth parameter
-  final EdgeInsetsGeometry? padding; // Added padding parameter
+  final bool isOutlined;
+  final bool fullWidth;
+  final EdgeInsetsGeometry? padding;
 
   const CompactButton({
     super.key,
     required this.onPressed,
     required this.text,
     this.icon,
-    this.height = 36,
+    this.height = 44, // Slightly increased for better tap target
     this.backgroundColor,
     this.foregroundColor,
-    this.borderRadius = 8.0, // Increased from default value
-    this.iconSize = 18, // Increased from default value
-    this.fontSize = 14, // Increased from default value
-    this.fontWeight = FontWeight.w500,
+    this.borderRadius = 16.0, // Increased for premium feel
+    this.iconSize = 18,
+    this.fontSize = 14,
+    this.fontWeight = FontWeight.bold, // Bolder for high-end look
     this.elevation = 0,
-    this.isOutlined = false, // Default to filled button
-    this.fullWidth = true, // Default to full width
-    this.padding, // Optional custom padding
+    this.isOutlined = false,
+    this.fullWidth = true,
+    this.padding,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    // Use AppTheme.primary as default
+    final effectiveBackgroundColor = backgroundColor ?? AppTheme.primary;
+    final effectiveForegroundColor = foregroundColor ??
+        (isOutlined ? effectiveBackgroundColor : Colors.white);
 
-    // Use provided colors or default theme colors
-    final effectiveBackgroundColor =
-        backgroundColor ?? theme.colorScheme.primary;
-    final effectiveForegroundColor =
-        foregroundColor ??
-        (isOutlined ? effectiveBackgroundColor : theme.colorScheme.onPrimary);
-
-    // Use provided padding or default horizontal padding
     final effectivePadding =
-        padding ?? const EdgeInsets.symmetric(horizontal: 16);
+        padding ?? const EdgeInsets.symmetric(horizontal: 20);
 
-    final buttonWidget =
-        isOutlined
-            ? OutlinedButton(
-              onPressed: onPressed,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: effectiveForegroundColor,
-                side: BorderSide(color: effectiveBackgroundColor),
-                elevation: elevation,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(borderRadius),
-                ),
-                padding: effectivePadding,
-              ),
-              child: _buildButtonContent(),
-            )
-            : ElevatedButton(
-              onPressed: onPressed,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: effectiveBackgroundColor,
-                foregroundColor: effectiveForegroundColor,
-                elevation: elevation,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(borderRadius),
-                ),
-                padding: effectivePadding,
-              ),
-              child: _buildButtonContent(),
-            );
+    Widget buttonWidget;
+    if (isOutlined) {
+      buttonWidget = OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: effectiveForegroundColor,
+          side: BorderSide(color: effectiveBackgroundColor, width: 1.5),
+          elevation: elevation,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(borderRadius),
+          ),
+          padding: effectivePadding,
+        ),
+        child: _buildButtonContent(),
+      );
+    } else {
+      buttonWidget = ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: effectiveBackgroundColor,
+          foregroundColor: effectiveForegroundColor,
+          elevation: elevation,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(borderRadius),
+          ),
+          padding: effectivePadding,
+        ),
+        child: _buildButtonContent(),
+      );
+    }
 
     return SizedBox(
       height: height,
@@ -96,7 +95,11 @@ class CompactButton extends StatelessWidget {
         ],
         Text(
           text,
-          style: TextStyle(fontSize: fontSize, fontWeight: fontWeight),
+          style: GoogleFonts.inter(
+            fontSize: fontSize,
+            fontWeight: fontWeight,
+            letterSpacing: 0.2, // Subtle elegance
+          ),
         ),
       ],
     );

@@ -41,8 +41,12 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 
   /// Initialize flutter_rust_bridge in mock mode.
   /// No libraries for FFI are loaded.
-  static void initMock({required RustLibApi api}) {
-    instance.initMockImpl(api: api);
+  static void initMock({
+    required RustLibApi api,
+  }) {
+    instance.initMockImpl(
+      api: api,
+    );
   }
 
   /// Dispose flutter_rust_bridge
@@ -77,10 +81,10 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
-        stem: 'rust_lib_pi_task_watch',
-        ioDirectory: 'rust/target/release/',
-        webPrefix: 'pkg/',
-      );
+    stem: 'rust_lib_pi_task_watch',
+    ioDirectory: 'rust/target/release/',
+    webPrefix: 'pkg/',
+  );
 }
 
 abstract class RustLibApi extends BaseApi {
@@ -92,9 +96,8 @@ abstract class RustLibApi extends BaseApi {
 
   Future<String> crateApiTakeFullScreenshotExtractBundledNircmd();
 
-  Future<List<ProcessInfo>> crateApiGetAllProcessListFindProcessByName({
-    required String name,
-  });
+  Future<List<ProcessInfo>> crateApiGetAllProcessListFindProcessByName(
+      {required String name});
 
   WindowDetails crateApiActiveWindowListenerGetActiveWindowInfo();
 
@@ -122,19 +125,15 @@ abstract class RustLibApi extends BaseApi {
 
   Future<void> crateApiDesktopNotificationRegisterModule();
 
-  Future<void> crateApiDesktopNotificationSendNotification({
-    required String title,
-    required String message,
-    String? iconPath,
-  });
+  Future<void> crateApiDesktopNotificationSendNotification(
+      {required String title, required String message, String? iconPath});
 
-  Future<void> crateApiDesktopNotificationSendNotificationWithOptions({
-    required String title,
-    required String message,
-    String? iconPath,
-    BigInt? timeoutSeconds,
-    int? urgencyLevel,
-  });
+  Future<void> crateApiDesktopNotificationSendNotificationWithOptions(
+      {required String title,
+      required String message,
+      String? iconPath,
+      BigInt? timeoutSeconds,
+      int? urgencyLevel});
 
   Stream<KeyboardEvent> crateApiKeyboardListenerStartKeyboardListener();
 
@@ -144,9 +143,8 @@ abstract class RustLibApi extends BaseApi {
 
   Stream<WindowDetails> crateApiActiveWindowListenerStartWindowListenerStream();
 
-  bool crateApiActiveWindowListenerStopWindowListener({
-    required BigInt listenerId,
-  });
+  bool crateApiActiveWindowListenerStopWindowListener(
+      {required BigInt listenerId});
 
   Future<String> crateApiTakeFullScreenshotTakeFullScreenshot();
 
@@ -219,138 +217,119 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @override
   Future<bool> crateApiGetAllProcessListCanAccessProcesses() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 1,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_bool,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiGetAllProcessListCanAccessProcessesConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 1, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_bool,
+        decodeErrorData: null,
       ),
-    );
+      constMeta: kCrateApiGetAllProcessListCanAccessProcessesConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta get kCrateApiGetAllProcessListCanAccessProcessesConstMeta =>
-      const TaskConstMeta(debugName: "can_access_processes", argNames: []);
+      const TaskConstMeta(
+        debugName: "can_access_processes",
+        argNames: [],
+      );
 
   @override
   Future<void> crateApiTakeFullScreenshotCheckLinuxEnvironment() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 2,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_unit,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta: kCrateApiTakeFullScreenshotCheckLinuxEnvironmentConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 2, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta: kCrateApiTakeFullScreenshotCheckLinuxEnvironmentConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta get kCrateApiTakeFullScreenshotCheckLinuxEnvironmentConstMeta =>
-      const TaskConstMeta(debugName: "check_linux_environment", argNames: []);
+      const TaskConstMeta(
+        debugName: "check_linux_environment",
+        argNames: [],
+      );
 
   @override
   Future<void> crateApiTakeFullScreenshotCheckWindowsEnvironment() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 3,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_unit,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta: kCrateApiTakeFullScreenshotCheckWindowsEnvironmentConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 3, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta: kCrateApiTakeFullScreenshotCheckWindowsEnvironmentConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotCheckWindowsEnvironmentConstMeta =>
-      const TaskConstMeta(debugName: "check_windows_environment", argNames: []);
+      get kCrateApiTakeFullScreenshotCheckWindowsEnvironmentConstMeta =>
+          const TaskConstMeta(
+            debugName: "check_windows_environment",
+            argNames: [],
+          );
 
   @override
   Future<String> crateApiTakeFullScreenshotExtractBundledNircmd() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 4,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta: kCrateApiTakeFullScreenshotExtractBundledNircmdConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 4, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta: kCrateApiTakeFullScreenshotExtractBundledNircmdConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta get kCrateApiTakeFullScreenshotExtractBundledNircmdConstMeta =>
-      const TaskConstMeta(debugName: "extract_bundled_nircmd", argNames: []);
+      const TaskConstMeta(
+        debugName: "extract_bundled_nircmd",
+        argNames: [],
+      );
 
   @override
-  Future<List<ProcessInfo>> crateApiGetAllProcessListFindProcessByName({
-    required String name,
-  }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_String(name, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 5,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_list_process_info,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiGetAllProcessListFindProcessByNameConstMeta,
-        argValues: [name],
-        apiImpl: this,
+  Future<List<ProcessInfo>> crateApiGetAllProcessListFindProcessByName(
+      {required String name}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(name, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 5, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_list_process_info,
+        decodeErrorData: null,
       ),
-    );
+      constMeta: kCrateApiGetAllProcessListFindProcessByNameConstMeta,
+      argValues: [name],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta get kCrateApiGetAllProcessListFindProcessByNameConstMeta =>
@@ -361,144 +340,138 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @override
   WindowDetails crateApiActiveWindowListenerGetActiveWindowInfo() {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 6)!;
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_window_details,
-          decodeErrorData: sse_decode_String,
-        ),
-        constMeta: kCrateApiActiveWindowListenerGetActiveWindowInfoConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeSync(SyncTask(
+      callFfi: () {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 6)!;
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_window_details,
+        decodeErrorData: sse_decode_String,
       ),
-    );
+      constMeta: kCrateApiActiveWindowListenerGetActiveWindowInfoConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta get kCrateApiActiveWindowListenerGetActiveWindowInfoConstMeta =>
-      const TaskConstMeta(debugName: "get_active_window_info", argNames: []);
+      const TaskConstMeta(
+        debugName: "get_active_window_info",
+        argNames: [],
+      );
 
   @override
   Future<List<ProcessInfo>> crateApiGetAllProcessListGetAllProcesses() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 7,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_list_process_info,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiGetAllProcessListGetAllProcessesConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 7, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_list_process_info,
+        decodeErrorData: null,
       ),
-    );
+      constMeta: kCrateApiGetAllProcessListGetAllProcessesConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta get kCrateApiGetAllProcessListGetAllProcessesConstMeta =>
-      const TaskConstMeta(debugName: "get_all_processes", argNames: []);
+      const TaskConstMeta(
+        debugName: "get_all_processes",
+        argNames: [],
+      );
 
   @override
   String crateApiActiveWindowListenerGetCurrentPlatform() {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 8)!;
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiActiveWindowListenerGetCurrentPlatformConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeSync(SyncTask(
+      callFfi: () {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 8)!;
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: null,
       ),
-    );
+      constMeta: kCrateApiActiveWindowListenerGetCurrentPlatformConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta get kCrateApiActiveWindowListenerGetCurrentPlatformConstMeta =>
-      const TaskConstMeta(debugName: "get_current_platform", argNames: []);
+      const TaskConstMeta(
+        debugName: "get_current_platform",
+        argNames: [],
+      );
 
   @override
   List<WindowDetails> crateApiActiveWindowListenerGetOpenWindowsInfo() {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 9)!;
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_list_window_details,
-          decodeErrorData: sse_decode_String,
-        ),
-        constMeta: kCrateApiActiveWindowListenerGetOpenWindowsInfoConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeSync(SyncTask(
+      callFfi: () {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 9)!;
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_list_window_details,
+        decodeErrorData: sse_decode_String,
       ),
-    );
+      constMeta: kCrateApiActiveWindowListenerGetOpenWindowsInfoConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta get kCrateApiActiveWindowListenerGetOpenWindowsInfoConstMeta =>
-      const TaskConstMeta(debugName: "get_open_windows_info", argNames: []);
+      const TaskConstMeta(
+        debugName: "get_open_windows_info",
+        argNames: [],
+      );
 
   @override
   Future<String> crateApiGetAllProcessListGetProcessAccessInfo() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 10,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiGetAllProcessListGetProcessAccessInfoConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 10, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: null,
       ),
-    );
+      constMeta: kCrateApiGetAllProcessListGetProcessAccessInfoConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta get kCrateApiGetAllProcessListGetProcessAccessInfoConstMeta =>
-      const TaskConstMeta(debugName: "get_process_access_info", argNames: []);
+      const TaskConstMeta(
+        debugName: "get_process_access_info",
+        argNames: [],
+      );
 
   @override
-  String crateApiActiveWindowListenerGetWindowIconData({
-    required int windowId,
-  }) {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_u_32(windowId, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 11)!;
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_String,
-        ),
-        constMeta: kCrateApiActiveWindowListenerGetWindowIconDataConstMeta,
-        argValues: [windowId],
-        apiImpl: this,
+  String crateApiActiveWindowListenerGetWindowIconData(
+      {required int windowId}) {
+    return handler.executeSync(SyncTask(
+      callFfi: () {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_u_32(windowId, serializer);
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 11)!;
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_String,
       ),
-    );
+      constMeta: kCrateApiActiveWindowListenerGetWindowIconDataConstMeta,
+      argValues: [windowId],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta get kCrateApiActiveWindowListenerGetWindowIconDataConstMeta =>
@@ -509,214 +482,190 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @override
   String crateApiSimpleGreet({required String name}) {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_String(name, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 12)!;
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiSimpleGreetConstMeta,
-        argValues: [name],
-        apiImpl: this,
+    return handler.executeSync(SyncTask(
+      callFfi: () {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(name, serializer);
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 12)!;
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: null,
       ),
-    );
+      constMeta: kCrateApiSimpleGreetConstMeta,
+      argValues: [name],
+      apiImpl: this,
+    ));
   }
 
-  TaskConstMeta get kCrateApiSimpleGreetConstMeta =>
-      const TaskConstMeta(debugName: "greet", argNames: ["name"]);
+  TaskConstMeta get kCrateApiSimpleGreetConstMeta => const TaskConstMeta(
+        debugName: "greet",
+        argNames: ["name"],
+      );
 
   @override
   Future<void> crateApiSimpleInitApp() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 13,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_unit,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiSimpleInitAppConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 13, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: null,
       ),
-    );
+      constMeta: kCrateApiSimpleInitAppConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
-  TaskConstMeta get kCrateApiSimpleInitAppConstMeta =>
-      const TaskConstMeta(debugName: "init_app", argNames: []);
+  TaskConstMeta get kCrateApiSimpleInitAppConstMeta => const TaskConstMeta(
+        debugName: "init_app",
+        argNames: [],
+      );
 
   @override
   Future<void> crateApiTakeFullScreenshotInitApp() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 14,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_unit,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiTakeFullScreenshotInitAppConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 14, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: null,
       ),
-    );
+      constMeta: kCrateApiTakeFullScreenshotInitAppConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta get kCrateApiTakeFullScreenshotInitAppConstMeta =>
-      const TaskConstMeta(debugName: "init_app", argNames: []);
+      const TaskConstMeta(
+        debugName: "init_app",
+        argNames: [],
+      );
 
   @override
   Future<bool> crateApiTakeFullScreenshotIsNircmdAvailable() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 15,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_bool,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiTakeFullScreenshotIsNircmdAvailableConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 15, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_bool,
+        decodeErrorData: null,
       ),
-    );
+      constMeta: kCrateApiTakeFullScreenshotIsNircmdAvailableConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta get kCrateApiTakeFullScreenshotIsNircmdAvailableConstMeta =>
-      const TaskConstMeta(debugName: "is_nircmd_available", argNames: []);
+      const TaskConstMeta(
+        debugName: "is_nircmd_available",
+        argNames: [],
+      );
 
   @override
   bool crateApiActiveWindowListenerIsPlatformSupported() {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 16)!;
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_bool,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiActiveWindowListenerIsPlatformSupportedConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeSync(SyncTask(
+      callFfi: () {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 16)!;
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_bool,
+        decodeErrorData: null,
       ),
-    );
+      constMeta: kCrateApiActiveWindowListenerIsPlatformSupportedConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta get kCrateApiActiveWindowListenerIsPlatformSupportedConstMeta =>
-      const TaskConstMeta(debugName: "is_platform_supported", argNames: []);
+      const TaskConstMeta(
+        debugName: "is_platform_supported",
+        argNames: [],
+      );
 
   @override
   Future<bool> crateApiGetAllProcessListKillProcess({required int pid}) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_u_32(pid, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 17,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_bool,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiGetAllProcessListKillProcessConstMeta,
-        argValues: [pid],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_u_32(pid, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 17, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_bool,
+        decodeErrorData: null,
       ),
-    );
+      constMeta: kCrateApiGetAllProcessListKillProcessConstMeta,
+      argValues: [pid],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta get kCrateApiGetAllProcessListKillProcessConstMeta =>
-      const TaskConstMeta(debugName: "kill_process", argNames: ["pid"]);
+      const TaskConstMeta(
+        debugName: "kill_process",
+        argNames: ["pid"],
+      );
 
   @override
   Future<void> crateApiDesktopNotificationRegisterModule() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 18,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_unit,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiDesktopNotificationRegisterModuleConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 18, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: null,
       ),
-    );
+      constMeta: kCrateApiDesktopNotificationRegisterModuleConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta get kCrateApiDesktopNotificationRegisterModuleConstMeta =>
-      const TaskConstMeta(debugName: "register_module", argNames: []);
+      const TaskConstMeta(
+        debugName: "register_module",
+        argNames: [],
+      );
 
   @override
-  Future<void> crateApiDesktopNotificationSendNotification({
-    required String title,
-    required String message,
-    String? iconPath,
-  }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_String(title, serializer);
-          sse_encode_String(message, serializer);
-          sse_encode_opt_String(iconPath, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 19,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_unit,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta: kCrateApiDesktopNotificationSendNotificationConstMeta,
-        argValues: [title, message, iconPath],
-        apiImpl: this,
+  Future<void> crateApiDesktopNotificationSendNotification(
+      {required String title, required String message, String? iconPath}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(title, serializer);
+        sse_encode_String(message, serializer);
+        sse_encode_opt_String(iconPath, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 19, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta: kCrateApiDesktopNotificationSendNotificationConstMeta,
+      argValues: [title, message, iconPath],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta get kCrateApiDesktopNotificationSendNotificationConstMeta =>
@@ -726,80 +675,65 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<void> crateApiDesktopNotificationSendNotificationWithOptions({
-    required String title,
-    required String message,
-    String? iconPath,
-    BigInt? timeoutSeconds,
-    int? urgencyLevel,
-  }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_String(title, serializer);
-          sse_encode_String(message, serializer);
-          sse_encode_opt_String(iconPath, serializer);
-          sse_encode_opt_box_autoadd_u_64(timeoutSeconds, serializer);
-          sse_encode_opt_box_autoadd_i_32(urgencyLevel, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 20,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_unit,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta:
-            kCrateApiDesktopNotificationSendNotificationWithOptionsConstMeta,
-        argValues: [title, message, iconPath, timeoutSeconds, urgencyLevel],
-        apiImpl: this,
+  Future<void> crateApiDesktopNotificationSendNotificationWithOptions(
+      {required String title,
+      required String message,
+      String? iconPath,
+      BigInt? timeoutSeconds,
+      int? urgencyLevel}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(title, serializer);
+        sse_encode_String(message, serializer);
+        sse_encode_opt_String(iconPath, serializer);
+        sse_encode_opt_box_autoadd_u_64(timeoutSeconds, serializer);
+        sse_encode_opt_box_autoadd_i_32(urgencyLevel, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 20, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta:
+          kCrateApiDesktopNotificationSendNotificationWithOptionsConstMeta,
+      argValues: [title, message, iconPath, timeoutSeconds, urgencyLevel],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiDesktopNotificationSendNotificationWithOptionsConstMeta =>
-      const TaskConstMeta(
-        debugName: "send_notification_with_options",
-        argNames: [
-          "title",
-          "message",
-          "iconPath",
-          "timeoutSeconds",
-          "urgencyLevel",
-        ],
-      );
+      get kCrateApiDesktopNotificationSendNotificationWithOptionsConstMeta =>
+          const TaskConstMeta(
+            debugName: "send_notification_with_options",
+            argNames: [
+              "title",
+              "message",
+              "iconPath",
+              "timeoutSeconds",
+              "urgencyLevel"
+            ],
+          );
 
   @override
   Stream<KeyboardEvent> crateApiKeyboardListenerStartKeyboardListener() {
     final sink = RustStreamSink<KeyboardEvent>();
-    unawaited(
-      handler.executeNormal(
-        NormalTask(
-          callFfi: (port_) {
-            final serializer = SseSerializer(generalizedFrbRustBinding);
-            sse_encode_StreamSink_keyboard_event_Sse(sink, serializer);
-            pdeCallFfi(
-              generalizedFrbRustBinding,
-              serializer,
-              funcId: 21,
-              port: port_,
-            );
-          },
-          codec: SseCodec(
-            decodeSuccessData: sse_decode_unit,
-            decodeErrorData: sse_decode_String,
-          ),
-          constMeta: kCrateApiKeyboardListenerStartKeyboardListenerConstMeta,
-          argValues: [sink],
-          apiImpl: this,
-        ),
+    unawaited(handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_StreamSink_keyboard_event_Sse(sink, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 21, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: sse_decode_String,
       ),
-    );
+      constMeta: kCrateApiKeyboardListenerStartKeyboardListenerConstMeta,
+      argValues: [sink],
+      apiImpl: this,
+    )));
     return sink.stream;
   }
 
@@ -812,29 +746,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @override
   Stream<MouseEvent> crateApiMouseListenerStartMouseListener() {
     final sink = RustStreamSink<MouseEvent>();
-    unawaited(
-      handler.executeNormal(
-        NormalTask(
-          callFfi: (port_) {
-            final serializer = SseSerializer(generalizedFrbRustBinding);
-            sse_encode_StreamSink_mouse_event_Sse(sink, serializer);
-            pdeCallFfi(
-              generalizedFrbRustBinding,
-              serializer,
-              funcId: 22,
-              port: port_,
-            );
-          },
-          codec: SseCodec(
-            decodeSuccessData: sse_decode_unit,
-            decodeErrorData: sse_decode_String,
-          ),
-          constMeta: kCrateApiMouseListenerStartMouseListenerConstMeta,
-          argValues: [sink],
-          apiImpl: this,
-        ),
+    unawaited(handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_StreamSink_mouse_event_Sse(sink, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 22, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: sse_decode_String,
       ),
-    );
+      constMeta: kCrateApiMouseListenerStartMouseListenerConstMeta,
+      argValues: [sink],
+      apiImpl: this,
+    )));
     return sink.stream;
   }
 
@@ -847,22 +773,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @override
   Stream<WindowDetails> crateApiActiveWindowListenerStartWindowListener() {
     final sink = RustStreamSink<WindowDetails>();
-    handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_StreamSink_window_details_Sse(sink, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 23)!;
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_u_64,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiActiveWindowListenerStartWindowListenerConstMeta,
-        argValues: [sink],
-        apiImpl: this,
+    handler.executeSync(SyncTask(
+      callFfi: () {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_StreamSink_window_details_Sse(sink, serializer);
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 23)!;
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_u_64,
+        decodeErrorData: null,
       ),
-    );
+      constMeta: kCrateApiActiveWindowListenerStartWindowListenerConstMeta,
+      argValues: [sink],
+      apiImpl: this,
+    ));
     return sink.stream;
   }
 
@@ -874,55 +798,50 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @override
   Stream<WindowDetails>
-  crateApiActiveWindowListenerStartWindowListenerStream() {
+      crateApiActiveWindowListenerStartWindowListenerStream() {
     final sink = RustStreamSink<WindowDetails>();
-    handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_StreamSink_window_details_Sse(sink, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 24)!;
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_u_64,
-          decodeErrorData: null,
-        ),
-        constMeta:
-            kCrateApiActiveWindowListenerStartWindowListenerStreamConstMeta,
-        argValues: [sink],
-        apiImpl: this,
+    handler.executeSync(SyncTask(
+      callFfi: () {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_StreamSink_window_details_Sse(sink, serializer);
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 24)!;
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_u_64,
+        decodeErrorData: null,
       ),
-    );
+      constMeta:
+          kCrateApiActiveWindowListenerStartWindowListenerStreamConstMeta,
+      argValues: [sink],
+      apiImpl: this,
+    ));
     return sink.stream;
   }
 
   TaskConstMeta
-  get kCrateApiActiveWindowListenerStartWindowListenerStreamConstMeta =>
-      const TaskConstMeta(
-        debugName: "start_window_listener_stream",
-        argNames: ["sink"],
-      );
+      get kCrateApiActiveWindowListenerStartWindowListenerStreamConstMeta =>
+          const TaskConstMeta(
+            debugName: "start_window_listener_stream",
+            argNames: ["sink"],
+          );
 
   @override
-  bool crateApiActiveWindowListenerStopWindowListener({
-    required BigInt listenerId,
-  }) {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_u_64(listenerId, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 25)!;
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_bool,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiActiveWindowListenerStopWindowListenerConstMeta,
-        argValues: [listenerId],
-        apiImpl: this,
+  bool crateApiActiveWindowListenerStopWindowListener(
+      {required BigInt listenerId}) {
+    return handler.executeSync(SyncTask(
+      callFfi: () {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_u_64(listenerId, serializer);
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 25)!;
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_bool,
+        decodeErrorData: null,
       ),
-    );
+      constMeta: kCrateApiActiveWindowListenerStopWindowListenerConstMeta,
+      argValues: [listenerId],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta get kCrateApiActiveWindowListenerStopWindowListenerConstMeta =>
@@ -933,938 +852,765 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @override
   Future<String> crateApiTakeFullScreenshotTakeFullScreenshot() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 26,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta: kCrateApiTakeFullScreenshotTakeFullScreenshotConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 26, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta: kCrateApiTakeFullScreenshotTakeFullScreenshotConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta get kCrateApiTakeFullScreenshotTakeFullScreenshotConstMeta =>
-      const TaskConstMeta(debugName: "take_full_screenshot", argNames: []);
+      const TaskConstMeta(
+        debugName: "take_full_screenshot",
+        argNames: [],
+      );
 
   @override
   Future<String> crateApiTakeFullScreenshotTakeScreenshotLinuxFallback() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 27,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta:
-            kCrateApiTakeFullScreenshotTakeScreenshotLinuxFallbackConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 27, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta:
+          kCrateApiTakeFullScreenshotTakeScreenshotLinuxFallbackConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTakeScreenshotLinuxFallbackConstMeta =>
-      const TaskConstMeta(
-        debugName: "take_screenshot_linux_fallback",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTakeScreenshotLinuxFallbackConstMeta =>
+          const TaskConstMeta(
+            debugName: "take_screenshot_linux_fallback",
+            argNames: [],
+          );
 
   @override
   Future<String> crateApiTakeFullScreenshotTakeScreenshotWindowsCsharp() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 28,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta:
-            kCrateApiTakeFullScreenshotTakeScreenshotWindowsCsharpConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 28, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta:
+          kCrateApiTakeFullScreenshotTakeScreenshotWindowsCsharpConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTakeScreenshotWindowsCsharpConstMeta =>
-      const TaskConstMeta(
-        debugName: "take_screenshot_windows_csharp",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTakeScreenshotWindowsCsharpConstMeta =>
+          const TaskConstMeta(
+            debugName: "take_screenshot_windows_csharp",
+            argNames: [],
+          );
 
   @override
   Future<String> crateApiTakeFullScreenshotTakeScreenshotWindowsDirectshow() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 29,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta:
-            kCrateApiTakeFullScreenshotTakeScreenshotWindowsDirectshowConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 29, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta:
+          kCrateApiTakeFullScreenshotTakeScreenshotWindowsDirectshowConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTakeScreenshotWindowsDirectshowConstMeta =>
-      const TaskConstMeta(
-        debugName: "take_screenshot_windows_directshow",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTakeScreenshotWindowsDirectshowConstMeta =>
+          const TaskConstMeta(
+            debugName: "take_screenshot_windows_directshow",
+            argNames: [],
+          );
 
   @override
   Future<String> crateApiTakeFullScreenshotTakeScreenshotWindowsFfmpeg() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 30,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta:
-            kCrateApiTakeFullScreenshotTakeScreenshotWindowsFfmpegConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 30, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta:
+          kCrateApiTakeFullScreenshotTakeScreenshotWindowsFfmpegConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTakeScreenshotWindowsFfmpegConstMeta =>
-      const TaskConstMeta(
-        debugName: "take_screenshot_windows_ffmpeg",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTakeScreenshotWindowsFfmpegConstMeta =>
+          const TaskConstMeta(
+            debugName: "take_screenshot_windows_ffmpeg",
+            argNames: [],
+          );
 
   @override
   Future<String> crateApiTakeFullScreenshotTakeScreenshotWindowsMemory() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 31,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta:
-            kCrateApiTakeFullScreenshotTakeScreenshotWindowsMemoryConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 31, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta:
+          kCrateApiTakeFullScreenshotTakeScreenshotWindowsMemoryConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTakeScreenshotWindowsMemoryConstMeta =>
-      const TaskConstMeta(
-        debugName: "take_screenshot_windows_memory",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTakeScreenshotWindowsMemoryConstMeta =>
+          const TaskConstMeta(
+            debugName: "take_screenshot_windows_memory",
+            argNames: [],
+          );
 
   @override
   Future<String> crateApiTakeFullScreenshotTakeScreenshotWindowsNircmd() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 32,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta:
-            kCrateApiTakeFullScreenshotTakeScreenshotWindowsNircmdConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 32, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta:
+          kCrateApiTakeFullScreenshotTakeScreenshotWindowsNircmdConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTakeScreenshotWindowsNircmdConstMeta =>
-      const TaskConstMeta(
-        debugName: "take_screenshot_windows_nircmd",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTakeScreenshotWindowsNircmdConstMeta =>
+          const TaskConstMeta(
+            debugName: "take_screenshot_windows_nircmd",
+            argNames: [],
+          );
 
   @override
   Future<String> crateApiTakeFullScreenshotTakeScreenshotWindowsPowershell() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 33,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta:
-            kCrateApiTakeFullScreenshotTakeScreenshotWindowsPowershellConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 33, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta:
+          kCrateApiTakeFullScreenshotTakeScreenshotWindowsPowershellConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTakeScreenshotWindowsPowershellConstMeta =>
-      const TaskConstMeta(
-        debugName: "take_screenshot_windows_powershell",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTakeScreenshotWindowsPowershellConstMeta =>
+          const TaskConstMeta(
+            debugName: "take_screenshot_windows_powershell",
+            argNames: [],
+          );
 
   @override
   Future<String> crateApiTakeFullScreenshotTakeScreenshotWindowsVbscript() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 34,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta:
-            kCrateApiTakeFullScreenshotTakeScreenshotWindowsVbscriptConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 34, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta:
+          kCrateApiTakeFullScreenshotTakeScreenshotWindowsVbscriptConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTakeScreenshotWindowsVbscriptConstMeta =>
-      const TaskConstMeta(
-        debugName: "take_screenshot_windows_vbscript",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTakeScreenshotWindowsVbscriptConstMeta =>
+          const TaskConstMeta(
+            debugName: "take_screenshot_windows_vbscript",
+            argNames: [],
+          );
 
   @override
   Future<String> crateApiTakeFullScreenshotTakeScreenshotWindowsWin32() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 35,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta:
-            kCrateApiTakeFullScreenshotTakeScreenshotWindowsWin32ConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 35, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta: kCrateApiTakeFullScreenshotTakeScreenshotWindowsWin32ConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTakeScreenshotWindowsWin32ConstMeta =>
-      const TaskConstMeta(
-        debugName: "take_screenshot_windows_win32",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTakeScreenshotWindowsWin32ConstMeta =>
+          const TaskConstMeta(
+            debugName: "take_screenshot_windows_win32",
+            argNames: [],
+          );
 
   @override
   Future<String> crateApiTakeFullScreenshotTakeScreenshotWindowsWmi() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 36,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta: kCrateApiTakeFullScreenshotTakeScreenshotWindowsWmiConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 36, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta: kCrateApiTakeFullScreenshotTakeScreenshotWindowsWmiConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTakeScreenshotWindowsWmiConstMeta =>
-      const TaskConstMeta(
-        debugName: "take_screenshot_windows_wmi",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTakeScreenshotWindowsWmiConstMeta =>
+          const TaskConstMeta(
+            debugName: "take_screenshot_windows_wmi",
+            argNames: [],
+          );
 
   @override
   Future<String>
-  crateApiTakeFullScreenshotTakeScreenshotWithScreenshotsCrate() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 37,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta:
-            kCrateApiTakeFullScreenshotTakeScreenshotWithScreenshotsCrateConstMeta,
-        argValues: [],
-        apiImpl: this,
+      crateApiTakeFullScreenshotTakeScreenshotWithScreenshotsCrate() {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 37, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta:
+          kCrateApiTakeFullScreenshotTakeScreenshotWithScreenshotsCrateConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTakeScreenshotWithScreenshotsCrateConstMeta =>
-      const TaskConstMeta(
-        debugName: "take_screenshot_with_screenshots_crate",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTakeScreenshotWithScreenshotsCrateConstMeta =>
+          const TaskConstMeta(
+            debugName: "take_screenshot_with_screenshots_crate",
+            argNames: [],
+          );
 
   @override
   Future<List<String>> crateApiTakeFullScreenshotTestAllAvailableMethods() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 38,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_list_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta: kCrateApiTakeFullScreenshotTestAllAvailableMethodsConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 38, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_list_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta: kCrateApiTakeFullScreenshotTestAllAvailableMethodsConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTestAllAvailableMethodsConstMeta =>
-      const TaskConstMeta(
-        debugName: "test_all_available_methods",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTestAllAvailableMethodsConstMeta =>
+          const TaskConstMeta(
+            debugName: "test_all_available_methods",
+            argNames: [],
+          );
 
   @override
   Future<String> crateApiTakeFullScreenshotTestBundledNircmdExtraction() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 39,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta:
-            kCrateApiTakeFullScreenshotTestBundledNircmdExtractionConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 39, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta:
+          kCrateApiTakeFullScreenshotTestBundledNircmdExtractionConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTestBundledNircmdExtractionConstMeta =>
-      const TaskConstMeta(
-        debugName: "test_bundled_nircmd_extraction",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTestBundledNircmdExtractionConstMeta =>
+          const TaskConstMeta(
+            debugName: "test_bundled_nircmd_extraction",
+            argNames: [],
+          );
 
   @override
   Future<void> crateApiTakeFullScreenshotTestLinuxEnvironmentCheck() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 40,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_unit,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta:
-            kCrateApiTakeFullScreenshotTestLinuxEnvironmentCheckConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 40, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta: kCrateApiTakeFullScreenshotTestLinuxEnvironmentCheckConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTestLinuxEnvironmentCheckConstMeta =>
-      const TaskConstMeta(
-        debugName: "test_linux_environment_check",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTestLinuxEnvironmentCheckConstMeta =>
+          const TaskConstMeta(
+            debugName: "test_linux_environment_check",
+            argNames: [],
+          );
 
   @override
   Future<String> crateApiTakeFullScreenshotTestLinuxFallbackMethods() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 41,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta: kCrateApiTakeFullScreenshotTestLinuxFallbackMethodsConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 41, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta: kCrateApiTakeFullScreenshotTestLinuxFallbackMethodsConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTestLinuxFallbackMethodsConstMeta =>
-      const TaskConstMeta(
-        debugName: "test_linux_fallback_methods",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTestLinuxFallbackMethodsConstMeta =>
+          const TaskConstMeta(
+            debugName: "test_linux_fallback_methods",
+            argNames: [],
+          );
 
   @override
   Future<bool> crateApiTakeFullScreenshotTestNircmdAvailability() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 42,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_bool,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiTakeFullScreenshotTestNircmdAvailabilityConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 42, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_bool,
+        decodeErrorData: null,
       ),
-    );
+      constMeta: kCrateApiTakeFullScreenshotTestNircmdAvailabilityConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTestNircmdAvailabilityConstMeta =>
-      const TaskConstMeta(debugName: "test_nircmd_availability", argNames: []);
+      get kCrateApiTakeFullScreenshotTestNircmdAvailabilityConstMeta =>
+          const TaskConstMeta(
+            debugName: "test_nircmd_availability",
+            argNames: [],
+          );
 
   @override
   Future<String> crateApiTakeFullScreenshotTestNircmdCapabilities() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 43,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta: kCrateApiTakeFullScreenshotTestNircmdCapabilitiesConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 43, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta: kCrateApiTakeFullScreenshotTestNircmdCapabilitiesConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTestNircmdCapabilitiesConstMeta =>
-      const TaskConstMeta(debugName: "test_nircmd_capabilities", argNames: []);
+      get kCrateApiTakeFullScreenshotTestNircmdCapabilitiesConstMeta =>
+          const TaskConstMeta(
+            debugName: "test_nircmd_capabilities",
+            argNames: [],
+          );
 
   @override
   Future<String> crateApiTakeFullScreenshotTestNircmdScreenshotSimple() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 44,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta:
-            kCrateApiTakeFullScreenshotTestNircmdScreenshotSimpleConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 44, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta: kCrateApiTakeFullScreenshotTestNircmdScreenshotSimpleConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTestNircmdScreenshotSimpleConstMeta =>
-      const TaskConstMeta(
-        debugName: "test_nircmd_screenshot_simple",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTestNircmdScreenshotSimpleConstMeta =>
+          const TaskConstMeta(
+            debugName: "test_nircmd_screenshot_simple",
+            argNames: [],
+          );
 
   @override
   Future<String> crateApiTakeFullScreenshotTestScreenshotsCrateMethod() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 45,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta:
-            kCrateApiTakeFullScreenshotTestScreenshotsCrateMethodConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 45, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta: kCrateApiTakeFullScreenshotTestScreenshotsCrateMethodConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTestScreenshotsCrateMethodConstMeta =>
-      const TaskConstMeta(
-        debugName: "test_screenshots_crate_method",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTestScreenshotsCrateMethodConstMeta =>
+          const TaskConstMeta(
+            debugName: "test_screenshots_crate_method",
+            argNames: [],
+          );
 
   @override
   Future<void> crateApiTakeFullScreenshotTestWindowsEnvironmentCheck() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 46,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_unit,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta:
-            kCrateApiTakeFullScreenshotTestWindowsEnvironmentCheckConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 46, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta:
+          kCrateApiTakeFullScreenshotTestWindowsEnvironmentCheckConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTestWindowsEnvironmentCheckConstMeta =>
-      const TaskConstMeta(
-        debugName: "test_windows_environment_check",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTestWindowsEnvironmentCheckConstMeta =>
+          const TaskConstMeta(
+            debugName: "test_windows_environment_check",
+            argNames: [],
+          );
 
   @override
   Future<String> crateApiTakeFullScreenshotTestWindowsMethod1Nircmd() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 47,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta: kCrateApiTakeFullScreenshotTestWindowsMethod1NircmdConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 47, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta: kCrateApiTakeFullScreenshotTestWindowsMethod1NircmdConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTestWindowsMethod1NircmdConstMeta =>
-      const TaskConstMeta(
-        debugName: "test_windows_method_1_nircmd",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTestWindowsMethod1NircmdConstMeta =>
+          const TaskConstMeta(
+            debugName: "test_windows_method_1_nircmd",
+            argNames: [],
+          );
 
   @override
   Future<String> crateApiTakeFullScreenshotTestWindowsMethod2Powershell() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 48,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta:
-            kCrateApiTakeFullScreenshotTestWindowsMethod2PowershellConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 48, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta:
+          kCrateApiTakeFullScreenshotTestWindowsMethod2PowershellConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTestWindowsMethod2PowershellConstMeta =>
-      const TaskConstMeta(
-        debugName: "test_windows_method_2_powershell",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTestWindowsMethod2PowershellConstMeta =>
+          const TaskConstMeta(
+            debugName: "test_windows_method_2_powershell",
+            argNames: [],
+          );
 
   @override
   Future<String> crateApiTakeFullScreenshotTestWindowsMethod3Memory() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 49,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta: kCrateApiTakeFullScreenshotTestWindowsMethod3MemoryConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 49, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta: kCrateApiTakeFullScreenshotTestWindowsMethod3MemoryConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTestWindowsMethod3MemoryConstMeta =>
-      const TaskConstMeta(
-        debugName: "test_windows_method_3_memory",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTestWindowsMethod3MemoryConstMeta =>
+          const TaskConstMeta(
+            debugName: "test_windows_method_3_memory",
+            argNames: [],
+          );
 
   @override
   Future<String> crateApiTakeFullScreenshotTestWindowsMethod4Directshow() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 50,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta:
-            kCrateApiTakeFullScreenshotTestWindowsMethod4DirectshowConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 50, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta:
+          kCrateApiTakeFullScreenshotTestWindowsMethod4DirectshowConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTestWindowsMethod4DirectshowConstMeta =>
-      const TaskConstMeta(
-        debugName: "test_windows_method_4_directshow",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTestWindowsMethod4DirectshowConstMeta =>
+          const TaskConstMeta(
+            debugName: "test_windows_method_4_directshow",
+            argNames: [],
+          );
 
   @override
   Future<String> crateApiTakeFullScreenshotTestWindowsMethod5Win32() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 51,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta: kCrateApiTakeFullScreenshotTestWindowsMethod5Win32ConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 51, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta: kCrateApiTakeFullScreenshotTestWindowsMethod5Win32ConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTestWindowsMethod5Win32ConstMeta =>
-      const TaskConstMeta(
-        debugName: "test_windows_method_5_win32",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTestWindowsMethod5Win32ConstMeta =>
+          const TaskConstMeta(
+            debugName: "test_windows_method_5_win32",
+            argNames: [],
+          );
 
   @override
   Future<String> crateApiTakeFullScreenshotTestWindowsMethod6Wmi() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 52,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta: kCrateApiTakeFullScreenshotTestWindowsMethod6WmiConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 52, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta: kCrateApiTakeFullScreenshotTestWindowsMethod6WmiConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta get kCrateApiTakeFullScreenshotTestWindowsMethod6WmiConstMeta =>
-      const TaskConstMeta(debugName: "test_windows_method_6_wmi", argNames: []);
+      const TaskConstMeta(
+        debugName: "test_windows_method_6_wmi",
+        argNames: [],
+      );
 
   @override
   Future<String> crateApiTakeFullScreenshotTestWindowsMethod7Ffmpeg() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 53,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta: kCrateApiTakeFullScreenshotTestWindowsMethod7FfmpegConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 53, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta: kCrateApiTakeFullScreenshotTestWindowsMethod7FfmpegConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTestWindowsMethod7FfmpegConstMeta =>
-      const TaskConstMeta(
-        debugName: "test_windows_method_7_ffmpeg",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTestWindowsMethod7FfmpegConstMeta =>
+          const TaskConstMeta(
+            debugName: "test_windows_method_7_ffmpeg",
+            argNames: [],
+          );
 
   @override
   Future<String> crateApiTakeFullScreenshotTestWindowsMethod8Csharp() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 54,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta: kCrateApiTakeFullScreenshotTestWindowsMethod8CsharpConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 54, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta: kCrateApiTakeFullScreenshotTestWindowsMethod8CsharpConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTestWindowsMethod8CsharpConstMeta =>
-      const TaskConstMeta(
-        debugName: "test_windows_method_8_csharp",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTestWindowsMethod8CsharpConstMeta =>
+          const TaskConstMeta(
+            debugName: "test_windows_method_8_csharp",
+            argNames: [],
+          );
 
   @override
   Future<String> crateApiTakeFullScreenshotTestWindowsMethod9Vbscript() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 55,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta:
-            kCrateApiTakeFullScreenshotTestWindowsMethod9VbscriptConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 55, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-    );
+      constMeta: kCrateApiTakeFullScreenshotTestWindowsMethod9VbscriptConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta
-  get kCrateApiTakeFullScreenshotTestWindowsMethod9VbscriptConstMeta =>
-      const TaskConstMeta(
-        debugName: "test_windows_method_9_vbscript",
-        argNames: [],
-      );
+      get kCrateApiTakeFullScreenshotTestWindowsMethod9VbscriptConstMeta =>
+          const TaskConstMeta(
+            debugName: "test_windows_method_9_vbscript",
+            argNames: [],
+          );
 
   @protected
   AnyhowException dco_decode_AnyhowException(dynamic raw) {
@@ -1874,24 +1620,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   RustStreamSink<KeyboardEvent> dco_decode_StreamSink_keyboard_event_Sse(
-    dynamic raw,
-  ) {
+      dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     throw UnimplementedError();
   }
 
   @protected
   RustStreamSink<MouseEvent> dco_decode_StreamSink_mouse_event_Sse(
-    dynamic raw,
-  ) {
+      dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     throw UnimplementedError();
   }
 
   @protected
   RustStreamSink<WindowDetails> dco_decode_StreamSink_window_details_Sse(
-    dynamic raw,
-  ) {
+      dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     throw UnimplementedError();
   }
@@ -2023,7 +1766,10 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     if (arr.length != 2) {
       throw Exception('Expected 2 elements, got ${arr.length}');
     }
-    return (dco_decode_i_32(arr[0]), dco_decode_i_32(arr[1]));
+    return (
+      dco_decode_i_32(arr[0]),
+      dco_decode_i_32(arr[1]),
+    );
   }
 
   @protected
@@ -2092,24 +1838,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   RustStreamSink<KeyboardEvent> sse_decode_StreamSink_keyboard_event_Sse(
-    SseDeserializer deserializer,
-  ) {
+      SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     throw UnimplementedError('Unreachable ()');
   }
 
   @protected
   RustStreamSink<MouseEvent> sse_decode_StreamSink_mouse_event_Sse(
-    SseDeserializer deserializer,
-  ) {
+      SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     throw UnimplementedError('Unreachable ()');
   }
 
   @protected
   RustStreamSink<WindowDetails> sse_decode_StreamSink_window_details_Sse(
-    SseDeserializer deserializer,
-  ) {
+      SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     throw UnimplementedError('Unreachable ()');
   }
@@ -2192,8 +1935,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   List<WindowDetails> sse_decode_list_window_details(
-    SseDeserializer deserializer,
-  ) {
+      SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
     var len_ = sse_decode_i_32(deserializer);
@@ -2213,12 +1955,11 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_isLeftClick = sse_decode_bool(deserializer);
     var var_isRightClick = sse_decode_bool(deserializer);
     return MouseEvent(
-      button: var_button,
-      isButtonPress: var_isButtonPress,
-      coords: var_coords,
-      isLeftClick: var_isLeftClick,
-      isRightClick: var_isRightClick,
-    );
+        button: var_button,
+        isButtonPress: var_isButtonPress,
+        coords: var_coords,
+        isLeftClick: var_isLeftClick,
+        isRightClick: var_isRightClick);
   }
 
   @protected
@@ -2263,12 +2004,11 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_memoryUsage = sse_decode_u_64(deserializer);
     var var_cpuUsage = sse_decode_f_32(deserializer);
     return ProcessInfo(
-      pid: var_pid,
-      name: var_name,
-      cmd: var_cmd,
-      memoryUsage: var_memoryUsage,
-      cpuUsage: var_cpuUsage,
-    );
+        pid: var_pid,
+        name: var_name,
+        cmd: var_cmd,
+        memoryUsage: var_memoryUsage,
+        cpuUsage: var_cpuUsage);
   }
 
   @protected
@@ -2281,8 +2021,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   (int, int, int, int) sse_decode_record_i_32_i_32_i_32_i_32(
-    SseDeserializer deserializer,
-  ) {
+      SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_field0 = sse_decode_i_32(deserializer);
     var var_field1 = sse_decode_i_32(deserializer);
@@ -2326,75 +2065,60 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_processId = sse_decode_u_32(deserializer);
     var var_os = sse_decode_String(deserializer);
     return WindowDetails(
-      id: var_id,
-      title: var_title,
-      position: var_position,
-      isFullScreen: var_isFullScreen,
-      processName: var_processName,
-      processPath: var_processPath,
-      processId: var_processId,
-      os: var_os,
-    );
+        id: var_id,
+        title: var_title,
+        position: var_position,
+        isFullScreen: var_isFullScreen,
+        processName: var_processName,
+        processPath: var_processPath,
+        processId: var_processId,
+        os: var_os);
   }
 
   @protected
   void sse_encode_AnyhowException(
-    AnyhowException self,
-    SseSerializer serializer,
-  ) {
+      AnyhowException self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(self.message, serializer);
   }
 
   @protected
   void sse_encode_StreamSink_keyboard_event_Sse(
-    RustStreamSink<KeyboardEvent> self,
-    SseSerializer serializer,
-  ) {
+      RustStreamSink<KeyboardEvent> self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(
-      self.setupAndSerialize(
-        codec: SseCodec(
+        self.setupAndSerialize(
+            codec: SseCodec(
           decodeSuccessData: sse_decode_keyboard_event,
           decodeErrorData: sse_decode_AnyhowException,
-        ),
-      ),
-      serializer,
-    );
+        )),
+        serializer);
   }
 
   @protected
   void sse_encode_StreamSink_mouse_event_Sse(
-    RustStreamSink<MouseEvent> self,
-    SseSerializer serializer,
-  ) {
+      RustStreamSink<MouseEvent> self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(
-      self.setupAndSerialize(
-        codec: SseCodec(
+        self.setupAndSerialize(
+            codec: SseCodec(
           decodeSuccessData: sse_decode_mouse_event,
           decodeErrorData: sse_decode_AnyhowException,
-        ),
-      ),
-      serializer,
-    );
+        )),
+        serializer);
   }
 
   @protected
   void sse_encode_StreamSink_window_details_Sse(
-    RustStreamSink<WindowDetails> self,
-    SseSerializer serializer,
-  ) {
+      RustStreamSink<WindowDetails> self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(
-      self.setupAndSerialize(
-        codec: SseCodec(
+        self.setupAndSerialize(
+            codec: SseCodec(
           decodeSuccessData: sse_decode_window_details,
           decodeErrorData: sse_decode_AnyhowException,
-        ),
-      ),
-      serializer,
-    );
+        )),
+        serializer);
   }
 
   @protected
@@ -2451,9 +2175,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   void sse_encode_list_prim_u_8_strict(
-    Uint8List self,
-    SseSerializer serializer,
-  ) {
+      Uint8List self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
     serializer.buffer.putUint8List(self);
@@ -2461,9 +2183,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   void sse_encode_list_process_info(
-    List<ProcessInfo> self,
-    SseSerializer serializer,
-  ) {
+      List<ProcessInfo> self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
@@ -2473,9 +2193,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   void sse_encode_list_window_details(
-    List<WindowDetails> self,
-    SseSerializer serializer,
-  ) {
+      List<WindowDetails> self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
@@ -2542,9 +2260,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   void sse_encode_record_i_32_i_32_i_32_i_32(
-    (int, int, int, int) self,
-    SseSerializer serializer,
-  ) {
+      (int, int, int, int) self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.$1, serializer);
     sse_encode_i_32(self.$2, serializer);

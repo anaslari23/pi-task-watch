@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:pi_task_watch/theme/app_theme.dart';
 
 class SearchableDropdown<T> extends StatefulWidget {
   final T? value;
@@ -18,7 +20,7 @@ class SearchableDropdown<T> extends StatefulWidget {
     required this.onChanged,
     required this.searchController,
     this.isRequired = false,
-    this.height = 32,
+    this.height = 40,
     required this.itemToString,
   });
 
@@ -31,260 +33,259 @@ class _SearchableDropdownState<T> extends State<SearchableDropdown<T>> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        _showSearchableDropdown(
-          context,
-          widget.items,
-          widget.value,
-          widget.hint,
-          widget.searchController,
-          widget.onChanged,
-          widget.itemToString,
+        showDialog(
+          context: context,
+          barrierDismissible: true,
+          builder: (BuildContext context) {
+            return _SearchableDropdownDialog<T>(
+              items: widget.items,
+              currentValue: widget.value,
+              hint: widget.hint,
+              searchController: widget.searchController,
+              onChanged: widget.onChanged,
+              itemToString: widget.itemToString,
+            );
+          },
         );
       },
       child: Container(
         height: widget.height,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: Colors.grey.shade300),
-          color: Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+          color: Colors.white,
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Row(
           children: [
-            Icon(Icons.search, size: 12, color: Colors.grey.shade600),
-            const SizedBox(width: 3),
+            Icon(Icons.storage_outlined, size: 16, color: Colors.grey.shade400),
+            const SizedBox(width: 8),
             Expanded(
               child: Text(
                 widget.value != null
                     ? widget.itemToString(widget.value as T)
                     : widget.hint,
-                style: TextStyle(
-                  fontSize: 11,
-                  color:
-                      widget.value != null
-                          ? Colors.grey.shade800
-                          : Colors.grey.shade600,
-                  overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: widget.value != null
+                      ? Colors.black87
+                      : Colors.grey.shade400,
                 ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            Icon(Icons.arrow_drop_down, color: Colors.grey.shade700, size: 16),
+            Icon(Icons.unfold_more, color: Colors.grey.shade400, size: 18),
           ],
         ),
       ),
     );
   }
+}
 
-  Future<void> _showSearchableDropdown(
-    BuildContext context,
-    List<T> items,
-    T? currentValue,
-    String hint,
-    TextEditingController searchController,
-    Function(T?) onChanged,
-    String Function(T) itemToString,
-  ) async {
-    searchController.text = '';
-    List<T> filteredItems = [...items];
-    final FocusNode searchFocusNode = FocusNode();
+class _SearchableDropdownDialog<T> extends StatefulWidget {
+  final List<T> items;
+  final T? currentValue;
+  final String hint;
+  final TextEditingController searchController;
+  final Function(T?) onChanged;
+  final String Function(T) itemToString;
 
-    await showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (BuildContext context) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          searchFocusNode.requestFocus();
-        });
+  const _SearchableDropdownDialog({
+    required this.items,
+    required this.currentValue,
+    required this.hint,
+    required this.searchController,
+    required this.onChanged,
+    required this.itemToString,
+  });
 
-        return StatefulBuilder(
-          builder: (context, setStateDialog) {
-            // Prepare the items list with selected item at top
-            List<T> displayItems = [];
-            if (currentValue != null) {
-              displayItems.add(currentValue);
-              filteredItems =
-                  filteredItems.where((item) => item != currentValue).toList();
-            }
-            displayItems.addAll(filteredItems);
+  @override
+  State<_SearchableDropdownDialog<T>> createState() =>
+      _SearchableDropdownDialogState<T>();
+}
 
-            return Dialog(
-              insetPadding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 20,
-              ),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: 300,
-                  maxHeight: 250,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Title and search row
-                      Row(
-                        children: [
-                          Text(
-                            hint,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const Spacer(),
-                          GestureDetector(
-                            onTap: () => Navigator.pop(context),
-                            child: const Icon(Icons.close, size: 14),
-                          ),
-                        ],
+class _SearchableDropdownDialogState<T>
+    extends State<_SearchableDropdownDialog<T>> {
+  late List<T> _filteredItems;
+  final FocusNode _searchFocusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    widget.searchController.text = '';
+    _filteredItems = [...widget.items];
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _searchFocusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    List<T> displayItems = [];
+    List<T> currentFiltered = [..._filteredItems];
+
+    if (widget.currentValue != null) {
+      displayItems.add(widget.currentValue as T);
+      currentFiltered.removeWhere((item) => item == widget.currentValue);
+    }
+    displayItems.addAll(currentFiltered);
+
+    return Dialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      child: Container(
+        width: 320, // Explicitly set width to avoid layout issues
+        height: 500, // Explicitly set height or use constraints
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.hint,
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
                       ),
-                      const SizedBox(height: 6),
-
-                      // Search field with focus node
-                      SizedBox(
-                        height: 28,
-                        child: TextField(
-                          controller: searchController,
-                          focusNode: searchFocusNode,
-                          decoration: InputDecoration(
-                            hintText: 'Type to search',
-                            hintStyle: const TextStyle(fontSize: 10),
-                            isDense: true,
-                            prefixIcon: Padding(
-                              padding: const EdgeInsets.all(6),
-                              child: Icon(
-                                Icons.search,
-                                size: 12,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(4),
-                              borderSide: BorderSide(
-                                color: Colors.grey.shade300,
-                                width: 1,
-                              ),
-                            ),
-                            contentPadding: EdgeInsets.zero,
-                            prefixIconConstraints: const BoxConstraints(
-                              minWidth: 24,
-                              minHeight: 24,
-                            ),
-                          ),
-                          style: const TextStyle(fontSize: 11),
-                          onChanged: (value) {
-                            setStateDialog(() {
-                              filteredItems =
-                                  items
-                                      .where(
-                                        (element) => itemToString(element)
-                                            .toLowerCase()
-                                            .contains(value.toLowerCase()),
-                                      )
-                                      .toList();
-                              displayItems = [];
-                              if (currentValue != null) {
-                                displayItems.add(currentValue);
-                                filteredItems =
-                                    filteredItems
-                                        .where((item) => item != currentValue)
-                                        .toList();
-                              }
-                              displayItems.addAll(filteredItems);
-                            });
-                          },
-                        ),
-                      ),
-
-                      const SizedBox(height: 6),
-
-                      // Items list
-                      Expanded(
-                        child:
-                            displayItems.isEmpty
-                                ? Center(
-                                  child: Text(
-                                    'No items found',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  ),
-                                )
-                                : ListView.builder(
-                                  shrinkWrap: true,
-                                  padding: EdgeInsets.zero,
-                                  itemCount: displayItems.length,
-                                  itemExtent: 28, // fixed height for each item
-                                  itemBuilder: (
-                                    BuildContext context,
-                                    int index,
-                                  ) {
-                                    final item = displayItems[index];
-                                    final isSelected = currentValue == item;
-
-                                    return InkWell(
-                                      onTap: () {
-                                        onChanged(item);
-                                        Navigator.pop(context);
-                                      },
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 6,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color:
-                                              isSelected
-                                                  ? Colors.grey.shade200
-                                                  : Colors.transparent,
-                                          borderRadius: BorderRadius.circular(
-                                            4,
-                                          ),
-                                        ),
-                                        alignment: Alignment.centerLeft,
-                                        child: Row(
-                                          children: [
-                                            if (isSelected)
-                                              Icon(
-                                                Icons.check,
-                                                size: 12,
-                                                color: Colors.grey.shade700,
-                                              ),
-                                            if (isSelected)
-                                              const SizedBox(width: 4),
-                                            Expanded(
-                                              child: Text(
-                                                itemToString(item),
-                                                style: TextStyle(
-                                                  fontSize: 11,
-                                                  fontWeight:
-                                                      isSelected
-                                                          ? FontWeight.w500
-                                                          : FontWeight.normal,
-                                                  color: Colors.grey.shade800,
-                                                ),
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                      ),
-                    ],
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        shape: BoxShape.circle,
+                      ),
+                      child:
+                          const Icon(Icons.close, size: 16, color: Colors.grey),
+                    ),
+                  ),
+                ],
               ),
-            );
-          },
-        );
-      },
-    );
+              const SizedBox(height: 16),
+              TextField(
+                controller: widget.searchController,
+                focusNode: _searchFocusNode,
+                decoration: InputDecoration(
+                  hintText: 'Search databases...',
+                  hintStyle:
+                      GoogleFonts.inter(fontSize: 13, color: Colors.grey),
+                  isDense: true,
+                  prefixIcon:
+                      const Icon(Icons.search, size: 20, color: Colors.grey),
+                  filled: true,
+                  fillColor: Colors.grey.shade50,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                ),
+                style: GoogleFonts.inter(fontSize: 13),
+                onChanged: (value) {
+                  setState(() {
+                    _filteredItems = widget.items
+                        .where((element) => widget
+                            .itemToString(element)
+                            .toLowerCase()
+                            .contains(value.toLowerCase()))
+                        .toList();
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: displayItems.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No results found',
+                          style: GoogleFonts.inter(
+                              fontSize: 13, color: Colors.grey),
+                        ),
+                      )
+                    : ListView.separated(
+                        shrinkWrap: true,
+                        physics: const BouncingScrollPhysics(),
+                        padding: EdgeInsets.zero,
+                        itemCount: displayItems.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 4),
+                        itemBuilder: (BuildContext context, int index) {
+                          final item = displayItems[index];
+                          final isSelected = widget.currentValue == item;
 
-    searchFocusNode.dispose();
+                          return Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                widget.onChanged(item);
+                                Navigator.of(context).pop();
+                              },
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                  horizontal: 12,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? AppTheme.primary.withOpacity(0.05)
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? AppTheme.primary.withOpacity(0.1)
+                                        : Colors.transparent,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    if (isSelected)
+                                      const Icon(Icons.check_circle,
+                                          size: 18, color: AppTheme.primary),
+                                    if (isSelected) const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        widget.itemToString(item),
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          fontWeight: isSelected
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                          color: isSelected
+                                              ? AppTheme.primary
+                                              : Colors.black87,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

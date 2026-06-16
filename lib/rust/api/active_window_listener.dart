@@ -25,9 +25,8 @@ bool isPlatformSupported() =>
 String getCurrentPlatform() =>
     RustLib.instance.api.crateApiActiveWindowListenerGetCurrentPlatform();
 
-Stream<WindowDetails> startWindowListenerStream() =>
-    RustLib.instance.api
-        .crateApiActiveWindowListenerStartWindowListenerStream();
+Stream<WindowDetails> startWindowListenerStream() => RustLib.instance.api
+    .crateApiActiveWindowListenerStartWindowListenerStream();
 
 Stream<WindowDetails> startWindowListener() =>
     RustLib.instance.api.crateApiActiveWindowListenerStartWindowListener();

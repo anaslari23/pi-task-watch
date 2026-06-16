@@ -1,4 +1,4 @@
-import '../exports.dart';
+import 'package:pi_task_watch/exports.dart';
 
 class RouteManager {
   // Initial route set to SigninScreen as per comment
@@ -19,6 +19,11 @@ class RouteManager {
       RouteItem(
         screen: const MyTaskListScreen(),
         routeName: MyTaskListScreen.routeName,
+        isProtected: true,
+      ),
+      RouteItem(
+        screen: const TaskDetailScreen(),
+        routeName: TaskDetailScreen.routeName,
         isProtected: true,
       ),
     ];

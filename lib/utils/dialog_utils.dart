@@ -1,4 +1,4 @@
-import '../exports.dart';
+import 'package:pi_task_watch/exports.dart';
 
 /// Utility class to show standardized dialogs throughout the app
 class DialogUtils {

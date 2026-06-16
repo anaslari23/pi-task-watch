@@ -1,4 +1,4 @@
-import '../utils/duration_utils.dart';
+import 'package:pi_task_watch/utils/duration_utils.dart';
 
 class TaskModelException implements Exception {
   final String message;
@@ -37,10 +37,10 @@ class TaskModel {
     String? startDate,
     String? endDate,
     required this.json,
-  }) : _usedTime = usedTime, // Updated assignment
-       _allocatedTimeInHours = allocatedTimeInHours,
-       _endDate = endDate,
-       _startDate = startDate;
+  })  : _usedTime = usedTime, // Updated assignment
+        _allocatedTimeInHours = allocatedTimeInHours,
+        _endDate = endDate,
+        _startDate = startDate;
 
   factory TaskModel.fromJson(Map<String, dynamic> json) {
     try {
@@ -325,8 +325,8 @@ class TaskModel {
     if (remaining == null || _allocatedTimeInHours == null) return 'N/A';
 
     final progress = getProgress();
-    final remainingPercentage = ((1 - progress.percentage) * 100)
-        .toStringAsFixed(0);
+    final remainingPercentage =
+        ((1 - progress.percentage) * 100).toStringAsFixed(0);
 
     if (isCompleted()) {
       return '✓ Completed';

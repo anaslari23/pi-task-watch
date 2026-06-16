@@ -17,7 +17,10 @@ class KeyboardEvent {
   final String key;
   final bool isKeyPress;
 
-  const KeyboardEvent({required this.key, required this.isKeyPress});
+  const KeyboardEvent({
+    required this.key,
+    required this.isKeyPress,
+  });
 
   @override
   int get hashCode => key.hashCode ^ isKeyPress.hashCode;

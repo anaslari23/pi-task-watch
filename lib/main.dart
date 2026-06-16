@@ -4,45 +4,107 @@ import 'package:pi_task_watch/controllers/timesheet_controller.dart';
 import 'package:pi_task_watch/my_app.dart';
 import 'package:pi_task_watch/rust/frb_generated.dart';
 import 'package:pi_task_watch/services/services.dart';
+import 'package:pi_task_watch/utils/log_utils.dart'; // Added
 import 'package:window_manager/window_manager.dart';
 import 'package:window_size/window_size.dart';
 
-import 'exports.dart';
+import 'package:pi_task_watch/exports.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  //
-  // await initSystemTray();
-  //
 
-  // Initialize Rust library
-  await RustLib.init();
+  // Initialize logging first
+  await LogUtils.init();
+  LogUtils.i('App starting...');
 
-  //
-  await WindowManager.instance.ensureInitialized();
+  try {
+    // Initialize Rust library
+    LogUtils.i('Initializing Rust library...');
+    await RustLib.init();
+    LogUtils.i('Rust library initialized successfully');
 
-  //
-  // LogUtils.init();
+    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+      LogUtils.i('Initializing Window Manager...');
+      await WindowManager.instance.ensureInitialized();
+      LogUtils.i('Window Manager initialized');
+    }
 
-  // Initialize controllers before the app starts
-  setAllController();
+    // Initialize controllers before the app starts
+    LogUtils.i('Setting up controllers...');
+    setAllController();
+    LogUtils.i('Controllers setup complete');
 
-  // Initialize lifecycle service to prevent freezing during system sleep/idle
-  await AppLifecycleService().initialize();
+    // Initialize lifecycle service to prevent freezing during system sleep/idle
+    LogUtils.i('Initializing AppLifecycleService...');
+    await AppLifecycleService().initialize();
+    LogUtils.i('AppLifecycleService initialized');
 
-  // Start user activity monitoring
-  UserActivityService().startWork();
+    // Start user activity monitoring
+    LogUtils.i('Starting UserActivityService...');
+    UserActivityService().startWork();
+    LogUtils.i('UserActivityService started');
 
-  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    // Set window size and position
-    setupWindowSize();
+    // Check for Wayland session on Linux
+    if (Platform.isLinux) {
+      final isWayland = Platform.environment['XDG_SESSION_TYPE'] == 'wayland' ||
+          Platform.environment['WAYLAND_DISPLAY'] != null;
+      if (isWayland) {
+        LogUtils.w(
+            'DETECTED WAYLAND SESSION: Global input monitoring and window tracking may be limited by system security.');
+        LogUtils.w(
+            'For full functionality on Zorin OS/Ubuntu, switching to Xorg (X11) at login is recommended.');
+      } else {
+        LogUtils.i('Detected X11 session');
+      }
+    }
+
+    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+      LogUtils.i('Setting up window size...');
+      setupWindowSize();
+    }
+
+    runApp(const MyApp());
+    LogUtils.i('App running');
+  } catch (e, stackTrace) {
+    LogUtils.e('FATAL ERROR DURING INITIALIZATION', e, stackTrace);
+
+    // Show a simple error app if initialization fails
+    runApp(MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 64),
+                const SizedBox(height: 16),
+                const Text(
+                  'Application failed to start',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'This might be due to missing system dependencies or hardware incompatibility.\n\nError: $e',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Log file: ${LogUtils.logFilePath}',
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => exit(1),
+                  child: const Text('Close'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ));
   }
-  // jaya
-  runApp(const MyApp());
-
-  // Future.delayed(const Duration(seconds: 2), () async {
-  //   await WindowManager.instance.setAlwaysOnTop(true);
-  // });
 }
 
 void setupWindowSize() {
@@ -65,8 +127,7 @@ void setupWindowSize() {
 
       // Set minimum and maximum height relative to screen size
       final minHeight = screenHeight * 0.3; // At least 30% of screen height
-      final maxHeight =
-          screenHeight *
+      final maxHeight = screenHeight *
           0.8; // At most 80% of screen height (increased from 70%)
 
       // Adjust width-to-height ratio for better appearance
@@ -85,7 +146,7 @@ void setupWindowSize() {
 
       // Set minimum and maximum window size with the calculated dimensions
       setWindowMinSize(Size(windowWidth, windowHeight));
-      setWindowMaxSize(Size(windowWidth, windowHeight));
+      // setWindowMaxSize(Size(windowWidth, windowHeight));
 
       // Calculate position for bottom right corner with platform-specific adjustments
       double windowLeft;
@@ -126,6 +187,7 @@ void setupWindowSize() {
 }
 
 void setAllController() {
+  Get.put(ThemeController(), permanent: true);
   Get.put(TrackerController(), permanent: true);
   Get.put(AuthController(), permanent: true);
   Get.put(ProjectController(), permanent: true);
