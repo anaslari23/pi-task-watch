@@ -16,6 +16,9 @@ Choose your platform below and follow the installation instructions:
 3. Run `pi_task_watch.exe`
 4. (Optional) Create a desktop shortcut
 
+> [!NOTE]
+> If you encounter a system error stating **`MSVCP140.dll` was not found** or **`VCRUNTIME140.dll` was not found**, please install the official [Microsoft Visual C++ Redistributable (x64)](https://aka.ms/vs/17/release/vc_redist.x64.exe) package and try running the app again.
+
 ---
 
 ## 🍎 **macOS**

@@ -37,6 +37,21 @@ jobs:
     - name: Create ZIP archive
       run: |
         cd build/windows/x64/runner/Release
+        $dlls = @(
+          "C:\Windows\System32\msvcp140.dll",
+          "C:\Windows\System32\msvcp140_1.dll",
+          "C:\Windows\System32\msvcp140_2.dll",
+          "C:\Windows\System32\vcruntime140.dll",
+          "C:\Windows\System32\vcruntime140_1.dll"
+        )
+        foreach ($dll in $dlls) {
+          if (Test-Path $dll) {
+            Copy-Item -Path $dll -Destination .
+            Write-Host "Bundled $dll"
+          } else {
+            Write-Warning "Could not find $dll to bundle"
+          }
+        }
         Compress-Archive -Path * -DestinationPath ../../../../../PI_Task_Watch_Windows_v1.0.23.zip
       shell: pwsh
       

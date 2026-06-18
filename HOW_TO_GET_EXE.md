@@ -60,6 +60,7 @@ PI_Task_Watch_Windows_v1.0.23.zip
 1. **All files needed**: Don't just copy the .exe alone - you need ALL files from the ZIP
 2. **Keep together**: All files must stay in the same folder
 3. **Run from folder**: Double-click `pi_task_watch.exe` to run the app
+4. **Troubleshooting MSVCP140.dll/VCRUNTIME140.dll error**: If you get an error stating those DLLs were not found, download and install the official [Microsoft Visual C++ Redistributable (x64)](https://aka.ms/vs/17/release/vc_redist.x64.exe).
 
 ---
 

@@ -51,6 +51,15 @@ https://github.com/spandanhalder8100-tech/pi-task-watch/actions
 
 ---
 
+## 🔧 **Troubleshooting:**
+
+If you or your employees get an error saying **"The code execution cannot proceed because MSVCP140.dll was not found..."**:
+1. Download the official **[Microsoft Visual C++ Redistributable (x64)](https://aka.ms/vs/17/release/vc_redist.x64.exe)**.
+2. Run the installer and restart the PC if prompted.
+3. Run `pi_task_watch.exe` again.
+
+---
+
 ## 🚀 **Easy Sharing Options:**
 
 ### **Option 1: Google Drive** (Recommended)
